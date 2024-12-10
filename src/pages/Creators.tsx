@@ -33,7 +33,7 @@ const PLATFORMS = [
 
 const Creators = () => {
   const navigate = useNavigate();
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [followerRange, setFollowerRange] = useState<number[]>([0, 1000000]);
 
   const { data: creators, isLoading } = useQuery({
@@ -51,7 +51,7 @@ const Creators = () => {
           )
         `);
 
-      if (selectedPlatform) {
+      if (selectedPlatform !== "all") {
         query = query.contains("social_media_profiles", [
           { platform: selectedPlatform },
         ]);
@@ -66,7 +66,7 @@ const Creators = () => {
         
         return creator.social_media_profiles.some(
           (profile: any) =>
-            (!selectedPlatform || profile.platform === selectedPlatform) &&
+            (selectedPlatform === "all" || profile.platform === selectedPlatform) &&
             profile.followers_count >= followerRange[0] &&
             (followerRange[1] === null || profile.followers_count <= followerRange[1])
         );
@@ -105,7 +105,7 @@ const Creators = () => {
                 <SelectValue placeholder="All platforms" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All platforms</SelectItem>
+                <SelectItem value="all">All platforms</SelectItem>
                 {PLATFORMS.map((platform) => (
                   <SelectItem key={platform.id} value={platform.id}>
                     <div className="flex items-center gap-2">
