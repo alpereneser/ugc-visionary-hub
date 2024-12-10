@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export const CostBreakdown = ({ selectedProducts, selectedCreators, budget }) => {
+export const CostBreakdown = ({ selectedProducts, selectedCreators, expenses }) => {
   const { data: products } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -15,23 +15,19 @@ export const CostBreakdown = ({ selectedProducts, selectedCreators, budget }) =>
     },
   });
 
-  const calculateTotalCost = () => {
-    let total = 0;
-    
-    // Add product costs
-    selectedProducts.forEach((productId) => {
+  const calculateProductsCost = () => {
+    return selectedProducts.reduce((acc, productId) => {
       const product = products?.find((p) => p.id === productId);
-      if (product?.cost_price) {
-        total += Number(product.cost_price) * selectedCreators.length;
-      }
-    });
+      return acc + (product?.cost_price || 0) * selectedCreators.length;
+    }, 0);
+  };
 
-    // Add campaign budget if specified
-    if (budget) {
-      total += Number(budget);
-    }
+  const calculateTotalExpenses = () => {
+    return expenses.reduce((acc, expense) => acc + Number(expense.amount || 0), 0);
+  };
 
-    return total.toFixed(2);
+  const calculateTotalCost = () => {
+    return (calculateProductsCost() + calculateTotalExpenses()).toFixed(2);
   };
 
   return (
@@ -41,26 +37,24 @@ export const CostBreakdown = ({ selectedProducts, selectedCreators, budget }) =>
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>Products Cost:</span>
-            <span>
-              $
-              {selectedProducts
-                .reduce((acc, productId) => {
-                  const product = products?.find(
-                    (p) => p.id === productId
-                  );
-                  return (
-                    acc +
-                    (product?.cost_price || 0) *
-                      selectedCreators.length
-                  );
-                }, 0)
-                .toFixed(2)}
-            </span>
+            <span>${calculateProductsCost().toFixed(2)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Additional Budget:</span>
-            <span>${budget || "0.00"}</span>
-          </div>
+          
+          {expenses.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Additional Expenses:</span>
+                {expenses.map((expense, index) => (
+                  <div key={index} className="flex justify-between pl-4">
+                    <span>{expense.name || "Unnamed expense"}</span>
+                    <span>${Number(expense.amount || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          
           <Separator className="my-2" />
           <div className="flex justify-between font-semibold">
             <span>Total Estimated Cost:</span>

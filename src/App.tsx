@@ -15,6 +15,7 @@ import CreatorDetail from "./pages/creators/[id]";
 import NewProduct from "./pages/products/new";
 import ProductDetail from "./pages/products/[id]";
 import NewCampaign from "./pages/campaigns/new";
+import CampaignDetail from "./pages/campaigns/[id]";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/products/new" element={<NewProduct />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/campaigns/new" element={<NewCampaign />} />
+            <Route path="/campaigns/:id" element={<CampaignDetail />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

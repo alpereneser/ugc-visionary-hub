@@ -16,18 +16,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { CreatorSelector } from "./CreatorSelector";
 import { ProductSelector } from "./ProductSelector";
 import { MediaUploader } from "./MediaUploader";
 import { CostBreakdown } from "./CostBreakdown";
+import { ExpenseInput } from "./ExpenseInput";
 
 const formSchema = z.object({
   name: z.string().min(2, "Campaign name must be at least 2 characters"),
   description: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  budget: z.string().optional(),
   selectedCreators: z.array(z.string()).min(1, "Select at least one creator"),
   selectedProducts: z.array(z.string()).min(1, "Select at least one product"),
   media: z.array(z.any()).optional(),
@@ -41,6 +40,7 @@ export const CampaignForm = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [uploadedMedia, setUploadedMedia] = useState<File[]>([]);
+  const [expenses, setExpenses] = useState<Array<{ name: string; amount: string }>>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -49,7 +49,6 @@ export const CampaignForm = () => {
       description: "",
       startDate: "",
       endDate: "",
-      budget: "",
       selectedCreators: [],
       selectedProducts: [],
       media: [],
@@ -64,7 +63,7 @@ export const CampaignForm = () => {
       for (const file of uploadedMedia) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        const { data, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('campaign_media')
           .upload(fileName, file);
 
@@ -80,7 +79,7 @@ export const CampaignForm = () => {
         });
       }
 
-      // Insert campaign
+      // Insert campaign with additional expenses
       const { data: campaign, error: campaignError } = await supabase
         .from("campaigns")
         .insert({
@@ -90,6 +89,7 @@ export const CampaignForm = () => {
           end_date: values.endDate || null,
           status: "draft",
           media: mediaUrls,
+          additional_expenses: expenses,
         })
         .select()
         .single();
@@ -115,7 +115,7 @@ export const CampaignForm = () => {
       await Promise.all([...creatorPromises, ...productPromises]);
 
       toast.success("Campaign created successfully");
-      navigate("/campaigns");
+      navigate(`/campaigns/${campaign.id}`);
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign");
@@ -206,29 +206,12 @@ export const CampaignForm = () => {
           setUploadedMedia={setUploadedMedia}
         />
 
-        <FormField
-          control={form.control}
-          name="budget"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Additional Budget (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter additional budget"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <ExpenseInput expenses={expenses} setExpenses={setExpenses} />
 
         <CostBreakdown
           selectedProducts={selectedProducts}
           selectedCreators={selectedCreators}
-          budget={form.watch("budget")}
+          expenses={expenses}
         />
 
         <div className="flex justify-end gap-4">
