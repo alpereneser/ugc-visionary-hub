@@ -91,7 +91,8 @@ const NewCreator = () => {
       }
 
       toast.success("Creator added successfully");
-      navigate("/creators");
+      // Navigate to the creator detail page instead of the list
+      navigate(`/creators/${creatorData.id}`);
     } catch (error) {
       console.error("Error adding creator:", error);
       toast.error("Failed to add creator");

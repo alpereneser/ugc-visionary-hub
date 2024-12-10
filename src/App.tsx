@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import NewCreator from "./pages/creators/new";
+import CreatorDetail from "./pages/creators/[id]";
 import NewProduct from "./pages/products/new";
 import NewCampaign from "./pages/campaigns/new";
 import { supabase } from "./integrations/supabase/client";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/home" element={<Home />} />
             <Route path="/creators/new" element={<NewCreator />} />
+            <Route path="/creators/:id" element={<CreatorDetail />} />
             <Route path="/products/new" element={<NewProduct />} />
             <Route path="/campaigns/new" element={<NewCampaign />} />
           </Routes>
