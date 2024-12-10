@@ -95,6 +95,7 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          additional_expenses: Json | null
           created_at: string
           description: string | null
           end_date: string | null
@@ -106,6 +107,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_expenses?: Json | null
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -117,6 +119,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_expenses?: Json | null
           created_at?: string
           description?: string | null
           end_date?: string | null

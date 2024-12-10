@@ -8,6 +8,11 @@ import { ArrowLeft, Calendar, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
+type AdditionalExpense = {
+  name: string;
+  amount: string;
+};
+
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -55,6 +60,8 @@ const CampaignDetail = () => {
   const products = campaign?.campaign_products?.map(
     (cp) => cp.products
   ).filter(Boolean);
+
+  const additionalExpenses = campaign?.additional_expenses as AdditionalExpense[] || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -186,6 +193,25 @@ const CampaignDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {additionalExpenses.length > 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="font-semibold mb-4">Additional Expenses</h3>
+                  <div className="space-y-2">
+                    {additionalExpenses.map((expense, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 rounded-lg hover:bg-muted"
+                      >
+                        <span>{expense.name}</span>
+                        <span>${Number(expense.amount).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {campaign?.media && campaign.media.length > 0 && (
               <Card>
