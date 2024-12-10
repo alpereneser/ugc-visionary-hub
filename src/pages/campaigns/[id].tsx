@@ -13,6 +13,38 @@ type AdditionalExpense = {
   amount: string;
 };
 
+type MediaItem = {
+  url: string;
+  type: 'image' | 'video';
+};
+
+type CampaignType = {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string | null;
+  media: MediaItem[] | null;
+  additional_expenses: AdditionalExpense[];
+  campaign_creators: {
+    creator_id: string;
+    ugc_creators: {
+      id: string;
+      first_name: string;
+      last_name: string;
+    } | null;
+  }[];
+  campaign_products: {
+    product_id: string;
+    products: {
+      id: string;
+      name: string;
+      cost_price: number | null;
+    } | null;
+  }[];
+};
+
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,7 +77,7 @@ const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as CampaignType;
     },
   });
 
@@ -208,46 +240,44 @@ const CampaignDetail = () => {
               </CardContent>
             </Card>
 
-            {additionalExpenses.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Campaign Costs</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Products Cost:</span>
-                      <span>${calculateProductsCost().toFixed(2)}</span>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="font-medium">Additional Expenses:</div>
-                      {additionalExpenses.map((expense, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-2 rounded-lg hover:bg-muted pl-4"
-                        >
-                          <span>{expense.name}</span>
-                          <span>${Number(expense.amount).toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between items-center font-semibold">
-                      <span>Total Campaign Cost:</span>
-                      <span>${calculateTotalCost()}</span>
-                    </div>
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-4">Campaign Costs</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Products Cost:</span>
+                    <span>${calculateProductsCost().toFixed(2)}</span>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  
+                  <div className="space-y-2">
+                    <div className="font-medium">Additional Expenses:</div>
+                    {additionalExpenses.map((expense, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 rounded-lg hover:bg-muted pl-4"
+                      >
+                        <span>{expense.name}</span>
+                        <span>${Number(expense.amount).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex justify-between items-center font-semibold">
+                    <span>Total Campaign Cost:</span>
+                    <span>${calculateTotalCost()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {campaign?.media && campaign.media.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Campaign Media</h3>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {campaign.media.map((item: any, index: number) => (
+                    {(campaign.media as MediaItem[]).map((item, index) => (
                       <div key={index} className="aspect-video rounded-lg overflow-hidden">
                         {item.type === 'image' ? (
                           <img
