@@ -77,7 +77,13 @@ const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      return data as CampaignType;
+      
+      // Transform the data to match our expected types
+      return {
+        ...data,
+        media: data.media as MediaItem[] || null,
+        additional_expenses: data.additional_expenses as AdditionalExpense[] || []
+      } as CampaignType;
     },
   });
 
@@ -93,7 +99,7 @@ const CampaignDetail = () => {
     (cp) => cp.products
   ).filter(Boolean);
 
-  const additionalExpenses = (campaign?.additional_expenses || []) as AdditionalExpense[];
+  const additionalExpenses = campaign?.additional_expenses || [];
 
   const calculateProductsCost = () => {
     return products?.reduce((acc, product) => {
@@ -277,7 +283,7 @@ const CampaignDetail = () => {
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Campaign Media</h3>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {(campaign.media as MediaItem[]).map((item, index) => (
+                    {campaign.media.map((item, index) => (
                       <div key={index} className="aspect-video rounded-lg overflow-hidden">
                         {item.type === 'image' ? (
                           <img
