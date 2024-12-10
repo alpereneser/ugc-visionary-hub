@@ -61,7 +61,21 @@ const CampaignDetail = () => {
     (cp) => cp.products
   ).filter(Boolean);
 
-  const additionalExpenses = campaign?.additional_expenses as AdditionalExpense[] || [];
+  const additionalExpenses = (campaign?.additional_expenses || []) as AdditionalExpense[];
+
+  const calculateProductsCost = () => {
+    return products?.reduce((acc, product) => {
+      return acc + (Number(product?.cost_price || 0) * (creators?.length || 0));
+    }, 0) || 0;
+  };
+
+  const calculateTotalExpenses = () => {
+    return additionalExpenses.reduce((acc, expense) => acc + Number(expense.amount || 0), 0);
+  };
+
+  const calculateTotalCost = () => {
+    return (calculateProductsCost() + calculateTotalExpenses()).toFixed(2);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -197,17 +211,32 @@ const CampaignDetail = () => {
             {additionalExpenses.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Additional Expenses</h3>
-                  <div className="space-y-2">
-                    {additionalExpenses.map((expense, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-2 rounded-lg hover:bg-muted"
-                      >
-                        <span>{expense.name}</span>
-                        <span>${Number(expense.amount).toFixed(2)}</span>
-                      </div>
-                    ))}
+                  <h3 className="font-semibold mb-4">Campaign Costs</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Products Cost:</span>
+                      <span>${calculateProductsCost().toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="font-medium">Additional Expenses:</div>
+                      {additionalExpenses.map((expense, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-2 rounded-lg hover:bg-muted pl-4"
+                        >
+                          <span>{expense.name}</span>
+                          <span>${Number(expense.amount).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between items-center font-semibold">
+                      <span>Total Campaign Cost:</span>
+                      <span>${calculateTotalCost()}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
