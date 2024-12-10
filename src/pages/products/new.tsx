@@ -24,8 +24,8 @@ const formSchema = z.object({
   description: z.string().optional(),
   sku: z.string().optional(),
   url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  retailPrice: z.string().transform((val) => (val ? parseFloat(val) : null)).optional(),
-  costPrice: z.string().transform((val) => (val ? parseFloat(val) : null)).optional(),
+  retailPrice: z.number().optional().nullable(),
+  costPrice: z.number().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,8 +41,8 @@ const NewProduct = () => {
       description: "",
       sku: "",
       url: "",
-      retailPrice: "",
-      costPrice: "",
+      retailPrice: null,
+      costPrice: null,
     },
   });
 
@@ -156,7 +156,7 @@ const NewProduct = () => {
                 <FormField
                   control={form.control}
                   name="retailPrice"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...field } }) => (
                     <FormItem>
                       <FormLabel>Retail Price (Optional)</FormLabel>
                       <FormControl>
@@ -165,7 +165,12 @@ const NewProduct = () => {
                           step="0.01"
                           min="0"
                           placeholder="Enter retail price" 
-                          {...field} 
+                          value={value ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            onChange(val ? Number(val) : null);
+                          }}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -176,7 +181,7 @@ const NewProduct = () => {
                 <FormField
                   control={form.control}
                   name="costPrice"
-                  render={({ field }) => (
+                  render={({ field: { value, onChange, ...field } }) => (
                     <FormItem>
                       <FormLabel>Cost Price (Optional)</FormLabel>
                       <FormControl>
@@ -185,7 +190,12 @@ const NewProduct = () => {
                           step="0.01"
                           min="0"
                           placeholder="Enter cost price" 
-                          {...field} 
+                          value={value ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            onChange(val ? Number(val) : null);
+                          }}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
