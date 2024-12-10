@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -11,6 +11,7 @@ import { ArrowRight } from "lucide-react";
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
+  company: z.string().optional(),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -36,6 +37,7 @@ const Register = () => {
     defaultValues: {
       name: "",
       email: "",
+      company: "",
       password: "",
       confirmPassword: "",
     },
@@ -86,6 +88,23 @@ const Register = () => {
                     <FormControl>
                       <Input placeholder="Enter your email" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company/Agency</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your company name (optional)" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Optional: Enter your company or agency name
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
