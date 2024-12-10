@@ -13,12 +13,20 @@ export const Header = () => {
             <span className="font-['Montserrat'] font-bold text-xl">UGC Tracker</span>
           </Link>
           
-          <Link 
-            to="/register" 
-            className="bg-primary text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
-          >
-            Get Started <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/login" 
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Login
+            </Link>
+            <Link 
+              to="/register" 
+              className="bg-primary text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            >
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </header>
