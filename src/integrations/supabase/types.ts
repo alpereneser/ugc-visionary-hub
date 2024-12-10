@@ -186,28 +186,37 @@ export type Database = {
       }
       products: {
         Row: {
+          cost_price: number | null
           created_at: string
           description: string | null
           id: string
           name: string
+          retail_price: number | null
           sku: string | null
           updated_at: string
+          url: string | null
         }
         Insert: {
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           id?: string
           name: string
+          retail_price?: number | null
           sku?: string | null
           updated_at?: string
+          url?: string | null
         }
         Update: {
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           id?: string
           name?: string
+          retail_price?: number | null
           sku?: string | null
           updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }

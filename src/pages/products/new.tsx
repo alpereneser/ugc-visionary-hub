@@ -23,6 +23,9 @@ const formSchema = z.object({
   name: z.string().min(2, "Product name must be at least 2 characters"),
   description: z.string().optional(),
   sku: z.string().optional(),
+  url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  retailPrice: z.string().transform((val) => (val ? parseFloat(val) : null)).optional(),
+  costPrice: z.string().transform((val) => (val ? parseFloat(val) : null)).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,6 +40,9 @@ const NewProduct = () => {
       name: "",
       description: "",
       sku: "",
+      url: "",
+      retailPrice: "",
+      costPrice: "",
     },
   });
 
@@ -47,6 +53,9 @@ const NewProduct = () => {
         name: values.name,
         description: values.description,
         sku: values.sku,
+        url: values.url || null,
+        retail_price: values.retailPrice,
+        cost_price: values.costPrice,
       });
 
       if (error) throw error;
@@ -124,6 +133,66 @@ const NewProduct = () => {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="url" 
+                        placeholder="Enter product URL" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="retailPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Retail Price (Optional)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          min="0"
+                          placeholder="Enter retail price" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="costPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cost Price (Optional)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          min="0"
+                          placeholder="Enter cost price" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex justify-end gap-4">
                 <Button
