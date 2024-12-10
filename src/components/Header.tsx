@@ -1,6 +1,22 @@
-import { ArrowRight, LogOut } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 
 export const Header = () => {
@@ -13,6 +29,10 @@ export const Header = () => {
     navigate("/login");
   };
 
+  const getInitials = (email: string) => {
+    return email ? email.charAt(0).toUpperCase() : "U";
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b">
       <div className="container mx-auto px-4">
@@ -23,23 +43,55 @@ export const Header = () => {
             </div>
             <span className="font-['Montserrat'] font-bold text-xl">UGC Tracker</span>
           </Link>
+
+          {session && (
+            <NavigationMenu className="hidden md:flex">
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/creators" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
+                    UGC'ler
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/products" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
+                    Ürünler
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/campaigns" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
+                    Kampanyalar
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
           
           <div className="flex items-center gap-4">
             {session ? (
-              <>
-                <span className="text-sm text-muted-foreground">
-                  {session.user.email}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-foreground hover:text-primary transition-colors"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>{getInitials(session.user.email || '')}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{session.user.email}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Ayarlar</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Çıkış Yap</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Link 
@@ -52,7 +104,7 @@ export const Header = () => {
                   to="/register" 
                   className="bg-primary text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
                 >
-                  Get Started <ArrowRight className="w-4 h-4" />
+                  Get Started
                 </Link>
               </>
             )}
