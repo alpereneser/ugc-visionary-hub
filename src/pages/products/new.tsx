@@ -49,19 +49,19 @@ const NewProduct = () => {
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("products").insert({
+      const { data, error } = await supabase.from("products").insert({
         name: values.name,
         description: values.description,
         sku: values.sku,
         url: values.url || null,
         retail_price: values.retailPrice,
         cost_price: values.costPrice,
-      });
+      }).select().single();
 
       if (error) throw error;
 
       toast.success("Product added successfully");
-      navigate("/products");
+      navigate(`/products/${data.id}`);
     } catch (error) {
       console.error("Error adding product:", error);
       toast.error("Failed to add product");
