@@ -1,104 +1,12 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
-import { Package, Users, Flag, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { StatsCard } from "@/components/home/StatsCard";
-import { RecentCreators } from "@/components/home/RecentCreators";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
-import { Pricing } from "@/components/Pricing";
+import { RecentCreators } from "@/components/home/RecentCreators";
+import { StatsCard } from "@/components/home/StatsCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
-  const session = useSession();
-  const navigate = useNavigate();
-
-  // Query to check user's license status
-  const { data: license } = useQuery({
-    queryKey: ["user-license", session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from("user_licenses")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-  });
-
-  useEffect(() => {
-    if (!session) {
-      navigate("/login");
-      return;
-    }
-
-    // Check if trial has ended and user doesn't have lifetime access
-    if (license && 
-        !license.has_lifetime_access && 
-        new Date(license.trial_end_date) < new Date()) {
-      // If trial ended and no lifetime access, show only pricing section
-      return;
-    }
-  }, [session, navigate, license]);
-
-  // If trial ended and no lifetime access, show only pricing
-  if (license && 
-      !license.has_lifetime_access && 
-      new Date(license.trial_end_date) < new Date()) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC]">
-        <Header />
-        <main className="container mx-auto px-4 py-8 pt-24">
-          <div className="max-w-4xl mx-auto">
-            <Pricing />
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  const { data: creatorsCount } = useQuery({
-    queryKey: ["creators-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("ugc_creators")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: productsCount } = useQuery({
-    queryKey: ["products-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true });
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: activeCampaignsCount } = useQuery({
-    queryKey: ["active-campaigns-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("campaigns")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "active");
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  const { data: recentCreators } = useQuery({
+  const { data: creators } = useQuery({
     queryKey: ["recent-creators"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -106,125 +14,48 @@ const Home = () => {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
+
       if (error) throw error;
       return data;
     },
   });
-
-  const { data: activeCampaigns } = useQuery({
-    queryKey: ["active-campaigns"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select("*")
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (!session) {
-    return null;
-  }
-
-  const stats = [
-    {
-      title: "UGC Creators",
-      value: creatorsCount?.toString() || "0",
-      icon: Users,
-      link: "/creators",
-    },
-    {
-      title: "Products",
-      value: productsCount?.toString() || "0",
-      icon: Package,
-      link: "/products",
-    },
-    {
-      title: "Active Campaigns",
-      value: activeCampaignsCount?.toString() || "0",
-      icon: Flag,
-      link: "/campaigns",
-    },
-  ];
-
-  const isAdmin = session.user.email === "alperen@tracefluence.com";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your campaigns and creators from one place.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              onClick={() => navigate("/creators/new")}
-              className="bg-white text-black border shadow-sm hover:bg-gray-100"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Creator
-            </Button>
-            <Button 
-              onClick={() => navigate("/products/new")}
-              className="bg-white text-black border shadow-sm hover:bg-gray-100"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Product
-            </Button>
-            <Button 
-              onClick={() => navigate("/campaigns/new")}
-              variant="default"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Campaign
-            </Button>
-            {isAdmin && (
-              <Button
-                onClick={() => navigate("/admin")}
-                variant="secondary"
-                className="bg-purple-100 text-purple-700 hover:bg-purple-200"
-              >
-                Go to Admin Panel
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat) => (
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+        <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard
-              key={stat.title}
-              title={stat.title}
-              value={stat.value}
-              icon={stat.icon}
-              link={stat.link}
+              title="Active Campaigns"
+              value="12"
+              description="+2.5% from last month"
+              type="increase"
             />
-          ))}
+            <StatsCard
+              title="Total Creators"
+              value="48"
+              description="+12% from last month"
+              type="increase"
+            />
+            <StatsCard
+              title="Products Tracked"
+              value="156"
+              description="-4% from last month"
+              type="decrease"
+            />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ActiveCampaigns />
+            </div>
+            <div>
+              <RecentCreators creators={creators} />
+            </div>
+          </div>
         </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <RecentCreators creators={recentCreators} />
-          </div>
-          <div className="space-y-6">
-            <ActiveCampaigns campaigns={activeCampaigns} />
-          </div>
-        </div>
-
-        {!license?.has_lifetime_access && (
-          <div className="mt-8">
-            <Pricing />
-          </div>
-        )}
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 

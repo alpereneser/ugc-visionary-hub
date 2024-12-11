@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CreatorActions } from "@/components/creators/CreatorActions";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const CreatorDetail = () => {
   const { id } = useParams();
@@ -37,9 +37,8 @@ const CreatorDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -110,8 +109,8 @@ const CreatorDetail = () => {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 

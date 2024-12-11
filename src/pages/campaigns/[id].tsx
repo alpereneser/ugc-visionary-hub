@@ -1,309 +1,109 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar, DollarSign } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { MainLayout } from "@/components/layouts/MainLayout";
+import { CostBreakdown } from "@/components/campaigns/CostBreakdown";
 import { CampaignActions } from "@/components/campaigns/CampaignActions";
-
-type AdditionalExpense = {
-  name: string;
-  amount: string;
-};
-
-type MediaItem = {
-  url: string;
-  type: 'image' | 'video';
-};
-
-type CampaignType = {
-  id: string;
-  name: string;
-  description: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  status: string | null;
-  media: MediaItem[] | null;
-  additional_expenses: AdditionalExpense[];
-  campaign_creators: {
-    creator_id: string;
-    ugc_creators: {
-      id: string;
-      first_name: string;
-      last_name: string;
-    } | null;
-  }[];
-  campaign_products: {
-    product_id: string;
-    products: {
-      id: string;
-      name: string;
-      cost_price: number | null;
-    } | null;
-  }[];
-};
 
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: campaign, isLoading: campaignLoading } = useQuery({
+  const { data: campaign, isLoading } = useQuery({
     queryKey: ["campaign", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: campaign, error } = await supabase
         .from("campaigns")
         .select(`
           *,
-          campaign_creators(
-            creator_id,
-            ugc_creators(
-              id,
-              first_name,
-              last_name
-            )
+          campaign_creators (
+            *,
+            ugc_creators (*)
           ),
-          campaign_products(
-            product_id,
-            products(
-              id,
-              name,
-              cost_price
-            )
+          campaign_products (
+            *,
+            products (*)
           )
         `)
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      
-      return {
-        ...data,
-        media: data.media as MediaItem[] || null,
-        additional_expenses: data.additional_expenses as AdditionalExpense[] || []
-      } as CampaignType;
+      return campaign;
     },
   });
 
-  if (campaignLoading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  const creators = campaign?.campaign_creators?.map(
-    (cc) => cc.ugc_creators
-  ).filter(Boolean);
-  
-  const products = campaign?.campaign_products?.map(
-    (cp) => cp.products
-  ).filter(Boolean);
-
-  const additionalExpenses = campaign?.additional_expenses || [];
-
-  const calculateProductsCost = () => {
-    return products?.reduce((acc, product) => {
-      return acc + (Number(product?.cost_price || 0) * (creators?.length || 0));
-    }, 0) || 0;
-  };
-
-  const calculateTotalExpenses = () => {
-    return additionalExpenses.reduce((acc, expense) => acc + Number(expense.amount || 0), 0);
-  };
-
-  const calculateTotalCost = () => {
-    return (calculateProductsCost() + calculateTotalExpenses()).toFixed(2);
-  };
+  if (!campaign) {
+    return <div>Campaign not found</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <nav className="flex mb-6 text-sm text-muted-foreground">
-            <Button
-              variant="ghost"
-              className="p-0 mr-2"
-              onClick={() => navigate("/campaigns")}
-            >
-              Campaigns
-            </Button>
-            <span className="mx-2">/</span>
-            <span className="text-foreground">{campaign?.name}</span>
-          </nav>
-
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">{campaign?.name}</h1>
-            <div className="flex items-center gap-2">
-              <CampaignActions campaignId={campaign?.id} />
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-3xl font-bold">{campaign.name}</h1>
             </div>
+            <CampaignActions campaignId={campaign.id} />
           </div>
 
           <div className="grid gap-6">
-            {campaign?.description && (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground">
-                    {campaign.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="w-4 h-4" />
-                    <h3 className="font-semibold">Campaign Period</h3>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Start Date:</span>
-                      <span>
-                        {campaign?.start_date
-                          ? format(new Date(campaign.start_date), "PPP")
-                          : "Not set"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>End Date:</span>
-                      <span>
-                        {campaign?.end_date
-                          ? format(new Date(campaign.end_date), "PPP")
-                          : "Not set"}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <DollarSign className="w-4 h-4" />
-                    <h3 className="font-semibold">Campaign Status</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span>Status:</span>
-                      <span className="capitalize">{campaign?.status}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-4">Selected Creators</h3>
-                <div className="grid gap-2">
-                  {creators?.map((creator) => (
-                    <div
-                      key={creator.id}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted"
-                    >
-                      <span>
-                        {creator.first_name} {creator.last_name}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/creators/${creator.id}`)}
-                      >
-                        View Profile
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-4">Selected Products</h3>
-                <div className="grid gap-2">
-                  {products?.map((product) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted"
-                    >
-                      <span>{product.name}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/products/${product.id}`)}
-                      >
-                        View Product
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-4">Campaign Costs</h3>
+                <h3 className="font-semibold mb-4">Campaign Details</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Products Cost:</span>
-                    <span>${calculateProductsCost().toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="font-medium">Additional Expenses:</div>
-                    {additionalExpenses.map((expense, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-2 rounded-lg hover:bg-muted pl-4"
-                      >
-                        <span>{expense.name}</span>
-                        <span>${Number(expense.amount).toFixed(2)}</span>
+                  {campaign.description && (
+                    <div>
+                      <span className="font-medium">Description:</span>
+                      <p className="text-muted-foreground">{campaign.description}</p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    {campaign.start_date && (
+                      <div>
+                        <span className="font-medium">Start Date:</span>
+                        <p className="text-muted-foreground">
+                          {new Date(campaign.start_date).toLocaleDateString()}
+                        </p>
                       </div>
-                    ))}
+                    )}
+                    {campaign.end_date && (
+                      <div>
+                        <span className="font-medium">End Date:</span>
+                        <p className="text-muted-foreground">
+                          {new Date(campaign.end_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex justify-between items-center font-semibold">
-                    <span>Total Campaign Cost:</span>
-                    <span>${calculateTotalCost()}</span>
+                  <div>
+                    <span className="font-medium">Status:</span>
+                    <p className="text-muted-foreground capitalize">{campaign.status}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {campaign?.media && campaign.media.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Campaign Media</h3>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {campaign.media.map((item, index) => (
-                      <div key={index} className="aspect-video rounded-lg overflow-hidden">
-                        {item.type === 'image' ? (
-                          <img
-                            src={item.url}
-                            alt={`Campaign media ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <video
-                            src={item.url}
-                            controls
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <CostBreakdown campaign={campaign} />
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
