@@ -12,7 +12,7 @@ export interface Campaign {
     name: string;
     amount: string;
   }>;
-  campaign_creators?: Array<{
+  campaign_creators: Array<{
     id: string;
     campaign_id: string;
     creator_id: string;
@@ -29,7 +29,7 @@ export interface Campaign {
       updated_at: string;
     };
   }>;
-  campaign_products?: Array<{
+  campaign_products: Array<{
     id: string;
     campaign_id: string;
     product_id: string;
