@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const BankTransferPayment = () => {
   const session = useSession();
@@ -86,26 +87,26 @@ export const BankTransferPayment = () => {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="grid gap-2">
-          <h3 className="font-semibold">Bank Transfer Details</h3>
-          <div className="grid gap-1">
-            <div className="text-sm">
-              <span className="font-medium">Bank:</span> Example Bank
+        <Card>
+          <CardContent className="p-4">
+            <div className="grid gap-2">
+              <h3 className="font-semibold">Bank Transfer Details</h3>
+              <div className="grid gap-1 text-sm">
+                <div><span className="font-medium">IBAN:</span> TR54 0004 6003 9100 1000 1796 23</div>
+                <div><span className="font-medium">SWIFT Code:</span> AKBKTRIS</div>
+                <div><span className="font-medium">Bank Name:</span> Akbank T.A.Ş.</div>
+                <div><span className="font-medium">Branch Code:</span> 0391</div>
+                <div><span className="font-medium">Bank Address:</span> Sabancı Center, 4. Levent, 34330 İstanbul, Türkiye</div>
+                <div className="mt-2">
+                  <span className="font-medium text-red-500">Important Note:</span> Please include "Tracefluence Lifetime Licence" in the payment description
+                </div>
+              </div>
             </div>
-            <div className="text-sm">
-              <span className="font-medium">Account Name:</span> Your Company Name
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">IBAN:</span> TR00 0000 0000 0000 0000 0000 00
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">Swift Code:</span> EXAMPLECODE
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-2">
-          <Label htmlFor="receipt">Ödeme ekran görüntüsü ya da dekontunu yükleyiniz</Label>
+          <Label htmlFor="receipt">Upload Payment Receipt (PDF, PNG, or JPG)</Label>
           <Input
             id="receipt"
             type="file"
@@ -113,6 +114,10 @@ export const BankTransferPayment = () => {
             onChange={handleFileChange}
             className="cursor-pointer"
           />
+          <p className="text-sm text-muted-foreground">
+            Your license will be approved after reviewing your receipt. For any questions or suggestions, 
+            please contact support@tracefluence.com
+          </p>
         </div>
 
         <Button
