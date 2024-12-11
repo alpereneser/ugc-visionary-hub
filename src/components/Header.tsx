@@ -1,4 +1,4 @@
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { Layout, LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import {
@@ -68,6 +68,12 @@ export const Header = () => {
           {session && (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/home" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
+                    <Layout className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </NavigationMenuItem>
                 <NavigationMenuItem>
                   <Link to="/creators" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
                     Creators
