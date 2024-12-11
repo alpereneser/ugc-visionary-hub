@@ -90,9 +90,6 @@ export const Header = () => {
           <div className="flex items-center gap-4">
             {session ? (
               <>
-                <span className="text-sm font-medium hidden md:block">
-                  {fullName || session.user.email}
-                </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -121,6 +118,9 @@ export const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <span className="text-sm font-medium hidden md:block">
+                  {fullName || session.user.email}
+                </span>
               </>
             ) : (
               <>
