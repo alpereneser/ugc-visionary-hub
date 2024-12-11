@@ -12,8 +12,10 @@ import Home from "./pages/Home";
 import Creators from "./pages/Creators";
 import NewCreator from "./pages/creators/new";
 import CreatorDetail from "./pages/creators/[id]";
+import Products from "./pages/products";
 import NewProduct from "./pages/products/new";
 import ProductDetail from "./pages/products/[id]";
+import Campaigns from "./pages/campaigns";
 import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
 import { supabase } from "./integrations/supabase/client";
@@ -36,8 +38,10 @@ const App = () => (
             <Route path="/creators" element={<Creators />} />
             <Route path="/creators/new" element={<NewCreator />} />
             <Route path="/creators/:id" element={<CreatorDetail />} />
+            <Route path="/products" element={<Products />} />
             <Route path="/products/new" element={<NewProduct />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/campaigns/new" element={<NewCampaign />} />
             <Route path="/campaigns/:id" element={<CampaignDetail />} />
           </Routes>
