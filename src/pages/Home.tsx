@@ -2,12 +2,13 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { StatsCard } from "@/components/home/StatsCard";
+import { DashboardHeader } from "@/components/home/DashboardHeader";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Package, BarChart3, Lock } from "lucide-react";
+import { Users, Package, BarChart3 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Pricing } from "@/components/Pricing";
 import { motion } from "framer-motion";
 
@@ -136,19 +137,7 @@ const Home = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          {isAdmin && (
-            <Button
-              onClick={() => navigate("/admin")}
-              variant="outline"
-              className="gap-2"
-            >
-              <Lock className="w-4 h-4" />
-              Admin Panel
-            </Button>
-          )}
-        </div>
+        <DashboardHeader />
 
         {!hasLifetimeAccess && (
           <motion.div
@@ -157,11 +146,11 @@ const Home = () => {
             className="mb-8 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-primary/20"
           >
             <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              {trialDaysLeft > 0 ? `${trialDaysLeft} Gün Deneme Süreniz Kaldı` : "Deneme Süreniz Bitti"}
+              {trialDaysLeft > 0 ? `${trialDaysLeft} Days Left in Trial` : "Trial Period Ended"}
             </h2>
             <p className="text-muted-foreground mb-4">
-              UGC Tracker'ın tüm özelliklerinden yararlanmak için Lifetime License satın alın. 
-              Sadece bir kere ödeme yapın, ömür boyu kullanın!
+              Get lifetime access to all features of UGC Tracker. 
+              Pay once, use forever!
             </p>
             <ul className="space-y-2 mb-4">
               <motion.li 
@@ -170,7 +159,7 @@ const Home = () => {
                 transition={{ delay: 0.1 }}
                 className="flex items-center gap-2 text-muted-foreground"
               >
-                ✓ Sınırsız kampanya takibi
+                ✓ Unlimited campaign tracking
               </motion.li>
               <motion.li 
                 initial={{ opacity: 0, x: -20 }}
@@ -178,7 +167,7 @@ const Home = () => {
                 transition={{ delay: 0.2 }}
                 className="flex items-center gap-2 text-muted-foreground"
               >
-                ✓ Detaylı performans analizleri
+                ✓ Detailed performance analytics
               </motion.li>
               <motion.li 
                 initial={{ opacity: 0, x: -20 }}
@@ -186,7 +175,7 @@ const Home = () => {
                 transition={{ delay: 0.3 }}
                 className="flex items-center gap-2 text-muted-foreground"
               >
-                ✓ Gelişmiş planlama araçları
+                ✓ Advanced planning tools
               </motion.li>
               <motion.li 
                 initial={{ opacity: 0, x: -20 }}
@@ -194,14 +183,14 @@ const Home = () => {
                 transition={{ delay: 0.4 }}
                 className="flex items-center gap-2 text-muted-foreground"
               >
-                ✓ Ücretsiz ömür boyu güncellemeler
+                ✓ Free lifetime updates
               </motion.li>
             </ul>
             <Button 
               onClick={() => navigate("/home")} 
               className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
             >
-              Lifetime License Satın Al - $50
+              Get Lifetime License - $50
             </Button>
           </motion.div>
         )}
