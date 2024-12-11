@@ -26,9 +26,6 @@ const formSchema = z.object({
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
-  instagram_handle: z.string().optional(),
-  tiktok_handle: z.string().optional(),
-  youtube_handle: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -43,9 +40,6 @@ const EditCreator = () => {
       last_name: "",
       email: "",
       phone: "",
-      instagram_handle: "",
-      tiktok_handle: "",
-      youtube_handle: "",
       notes: "",
     },
   });
@@ -65,12 +59,8 @@ const EditCreator = () => {
       form.reset({
         first_name: data.first_name,
         last_name: data.last_name,
-        email: data.email,
+        email: data.email || "",
         phone: data.phone || "",
-        instagram_handle: data.instagram_handle || "",
-        tiktok_handle: data.tiktok_handle || "",
-        youtube_handle: data.youtube_handle || "",
-        notes: data.notes || "",
       });
 
       return data;
@@ -176,48 +166,6 @@ const EditCreator = () => {
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="instagram_handle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Instagram</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="tiktok_handle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>TikTok</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="youtube_handle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>YouTube</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
 
                   <FormField
                     control={form.control}

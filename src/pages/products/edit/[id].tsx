@@ -16,7 +16,8 @@ const EditProduct = () => {
     name: "",
     description: "",
     sku: "",
-    price: "",
+    cost_price: "",
+    retail_price: "",
     url: "",
   });
 
@@ -35,7 +36,8 @@ const EditProduct = () => {
         name: data.name || "",
         description: data.description || "",
         sku: data.sku || "",
-        price: data.price?.toString() || "",
+        cost_price: data.cost_price?.toString() || "",
+        retail_price: data.retail_price?.toString() || "",
         url: data.url || "",
       });
 
@@ -53,7 +55,8 @@ const EditProduct = () => {
           name: formData.name,
           description: formData.description,
           sku: formData.sku,
-          price: parseFloat(formData.price) || 0,
+          cost_price: parseFloat(formData.cost_price) || 0,
+          retail_price: parseFloat(formData.retail_price) || 0,
           url: formData.url,
           updated_at: new Date().toISOString(),
         })
@@ -139,15 +142,29 @@ const EditProduct = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="price" className="text-sm font-medium">
-                Price
+              <label htmlFor="cost_price" className="text-sm font-medium">
+                Cost Price
               </label>
               <Input
-                id="price"
-                name="price"
+                id="cost_price"
+                name="cost_price"
                 type="number"
                 step="0.01"
-                value={formData.price}
+                value={formData.cost_price}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="retail_price" className="text-sm font-medium">
+                Retail Price
+              </label>
+              <Input
+                id="retail_price"
+                name="retail_price"
+                type="number"
+                step="0.01"
+                value={formData.retail_price}
                 onChange={handleChange}
               />
             </div>

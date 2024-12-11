@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -17,15 +16,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { MainLayout } from "@/components/layouts/MainLayout";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
@@ -41,6 +31,7 @@ const formSchema = z.object({
   }),
   budget: z.string().optional(),
   goals: z.string().optional(),
+  status: z.enum(["draft", "active", "completed", "upcoming"]),
 });
 
 const NewCampaign = () => {
@@ -54,6 +45,7 @@ const NewCampaign = () => {
       description: "",
       budget: "",
       goals: "",
+      status: "draft",
     },
   });
 
@@ -63,17 +55,15 @@ const NewCampaign = () => {
 
       const { data, error } = await supabase
         .from("campaigns")
-        .insert([
-          {
-            name: values.name,
-            description: values.description,
-            start_date: values.start_date,
-            end_date: values.end_date,
-            budget: values.budget,
-            goals: values.goals,
-            status: "draft",
-          },
-        ])
+        .insert({
+          name: values.name,
+          description: values.description,
+          start_date: values.start_date,
+          end_date: values.end_date,
+          budget: values.budget,
+          goals: values.goals,
+          status: values.status,
+        })
         .select()
         .single();
 
@@ -90,180 +80,116 @@ const NewCampaign = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Create New Campaign</h1>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Campaign Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter campaign name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Campaign Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter campaign name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter campaign description"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0, 0, 0, 0))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Enter campaign description"
+                  {...field}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-                <FormField
-                  control={form.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0, 0, 0, 0))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="start_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="budget"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Budget</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter campaign budget" {...field} />
-                    </FormControl>
-                    <FormDescription>Optional</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="goals"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Goals</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter campaign goals"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>Optional</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(-1)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Campaign"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <FormField
+            control={form.control}
+            name="end_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>End Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
-    </MainLayout>
+
+        <FormField
+          control={form.control}
+          name="budget"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Budget</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter campaign budget" {...field} />
+              </FormControl>
+              <FormDescription>Optional</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="goals"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Goals</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Enter campaign goals"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>Optional</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate(-1)}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Campaign"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

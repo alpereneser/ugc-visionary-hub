@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 
 const CreatorDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: creator, isLoading } = useQuery({
     queryKey: ["creator", id],

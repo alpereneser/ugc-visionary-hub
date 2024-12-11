@@ -27,10 +27,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const CampaignStatus = z.enum(["draft", "active", "completed", "upcoming"]);
+type CampaignStatus = z.infer<typeof CampaignStatus>;
+
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  status: z.enum(["draft", "active", "completed", "upcoming"]),
+  status: CampaignStatus,
   start_date: z.string().optional(),
   end_date: z.string().optional(),
 });
