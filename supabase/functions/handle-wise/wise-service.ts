@@ -30,7 +30,6 @@ export async function createWiseQuote(amount: number): Promise<any> {
 export async function createWisePaymentLink(quoteId: string, userId: string): Promise<string> {
   console.log('Creating Wise payment link for quote:', quoteId);
   
-  // Wise API v3 için güncellenmiş endpoint ve request body
   const response = await fetch('https://api.wise.com/v3/profiles/' + Deno.env.get('WISE_PROFILE_ID') + '/payment-urls', {
     method: 'POST',
     headers: {
