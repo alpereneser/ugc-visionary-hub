@@ -1,13 +1,10 @@
-import { Layout, LogOut, Menu, MessageSquare, Settings, User, X, Users, Package, Flag } from "lucide-react";
+import { Layout, LogOut, Menu, MessageSquare, Settings, User, Users, Package, Flag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
+  NavigationMenuItem,
 } from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
@@ -26,6 +23,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const Header = () => {
   const session = useSession();
@@ -35,8 +33,21 @@ export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error);
+        throw error;
+      }
+      // Even if there's an error with the server-side logout,
+      // we'll redirect the user to ensure they can't access protected routes
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Logout failed:", error);
+      toast.error("An error occurred during logout. Please try again.");
+      // Force redirect to login page even if logout fails
+      navigate("/login");
+    }
   };
 
   const handleLogoClick = () => {
