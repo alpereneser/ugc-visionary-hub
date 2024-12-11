@@ -118,7 +118,7 @@ export const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <span className="text-sm font-medium hidden md:block">
+                <span className="text-sm font-medium hidden md:block border border-gray-200 rounded-[10px] py-2 px-4">
                   {fullName || session.user.email}
                 </span>
               </>
