@@ -27,19 +27,30 @@ export const Header = () => {
     
     setIsLoggingOut(true);
     try {
-      // Clear local session state first
-      localStorage.removeItem('supabase.auth.token');
+      // First, try to get the current session
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
       
-      // Attempt to sign out from Supabase
-      await supabase.auth.signOut({ scope: 'local' });
+      if (currentSession) {
+        // If we have a session, try to sign out properly
+        await supabase.auth.signOut();
+      }
+      
+      // Clear any local storage data
+      localStorage.clear();
+      
+      // Force clear the Supabase session
+      await supabase.auth.clearSession();
       
       // Always navigate to login page
       navigate("/login", { replace: true });
+      
+      toast.success("Successfully logged out");
     } catch (error: any) {
       console.error("Logout failed:", error);
-      toast.error("An error occurred during logout");
-      // Force navigation to login even if there was an error
+      // Even if there's an error, we want to clear local state and redirect
+      localStorage.clear();
       navigate("/login", { replace: true });
+      toast.error("An error occurred during logout, but you've been redirected to login");
     } finally {
       setIsLoggingOut(false);
     }
