@@ -150,6 +150,8 @@ const Home = () => {
     },
   ];
 
+  const isAdmin = session.user.email === "alperen@tracefluence.com";
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Header />
@@ -183,6 +185,15 @@ const Home = () => {
               <Plus className="w-4 h-4 mr-2" />
               New Campaign
             </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate("/admin")}
+                variant="secondary"
+                className="bg-purple-100 text-purple-700 hover:bg-purple-200"
+              >
+                Go to Admin Panel
+              </Button>
+            )}
           </div>
         </div>
 
@@ -207,9 +218,11 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="mt-8">
-          <Pricing />
-        </div>
+        {!license?.has_lifetime_access && (
+          <div className="mt-8">
+            <Pricing />
+          </div>
+        )}
       </main>
     </div>
   );

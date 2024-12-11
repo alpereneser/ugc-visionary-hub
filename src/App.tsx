@@ -27,6 +27,7 @@ import Campaigns from "./pages/campaigns";
 import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
 import EditCampaign from "./pages/campaigns/edit/[id]";
+import AdminDashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +58,9 @@ const App = () => {
                 <Route path="/settings" element={<AuthWrapper><Settings /></AuthWrapper>} />
                 <Route path="/feedback" element={<AuthWrapper><Feedback /></AuthWrapper>} />
                 <Route path="/home" element={<AuthWrapper><Home /></AuthWrapper>} />
+                
+                {/* Admin routes */}
+                <Route path="/admin" element={<AuthWrapper><AdminDashboard /></AuthWrapper>} />
                 
                 {/* Creators routes */}
                 <Route path="/creators" element={<AuthWrapper><Creators /></AuthWrapper>} />
