@@ -32,7 +32,14 @@ const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      return campaign;
+      
+      // Ensure additional_expenses is always an array
+      return {
+        ...campaign,
+        additional_expenses: Array.isArray(campaign.additional_expenses) 
+          ? campaign.additional_expenses 
+          : []
+      };
     },
   });
 
