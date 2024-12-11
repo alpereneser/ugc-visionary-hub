@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { ReviewsGrid } from "./reviews/ReviewsGrid";
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -23,6 +24,11 @@ export const Hero = () => {
                 Start Tracking
               </Button>
             </Link>
+          </div>
+          
+          <ReviewsGrid />
+          
+          <div className="mt-6">
             <Link to="/login" className="text-lg font-semibold leading-6 text-gray-300 hover:text-white transition-colors">
               Login <span aria-hidden="true">→</span>
             </Link>
