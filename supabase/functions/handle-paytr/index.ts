@@ -13,10 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const { user_id } = await req.json()
+    // Parse request body
+    let body;
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.error('Error parsing request body:', e)
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    const { user_id } = body
 
     if (!user_id) {
-      throw new Error('User ID is required')
+      return new Response(
+        JSON.stringify({ error: 'User ID is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     // Initialize Supabase client
@@ -34,7 +55,13 @@ serve(async (req) => {
 
     if (userError || !userData) {
       console.error('Error fetching user data:', userError)
-      throw new Error('User not found')
+      return new Response(
+        JSON.stringify({ error: 'User not found' }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     // Generate a unique payment ID
@@ -81,15 +108,44 @@ serve(async (req) => {
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
     // Add token to payment data
-    paytrData.paytr_token = hashHex
+    const formData = new FormData()
+    Object.entries(paytrData).forEach(([key, value]) => {
+      formData.append(key, value.toString())
+    })
+    formData.append('paytr_token', hashHex)
 
     // Make request to PayTR API
     const paytrResponse = await fetch('https://www.paytr.com/odeme/api/get-token', {
       method: 'POST',
-      body: new URLSearchParams(paytrData),
+      body: formData,
     })
 
-    const paytrResult = await paytrResponse.json()
+    if (!paytrResponse.ok) {
+      const errorText = await paytrResponse.text()
+      console.error('PayTR API error:', errorText)
+      return new Response(
+        JSON.stringify({ error: 'Payment provider error', details: errorText }),
+        { 
+          status: paytrResponse.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    let paytrResult;
+    try {
+      paytrResult = await paytrResponse.json()
+    } catch (e) {
+      console.error('Error parsing PayTR response:', e)
+      return new Response(
+        JSON.stringify({ error: 'Invalid response from payment provider' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     console.log('PayTR API response:', paytrResult)
 
     if (paytrResult.status === 'success') {
@@ -103,7 +159,16 @@ serve(async (req) => {
         }
       )
     } else {
-      throw new Error(paytrResult.reason || 'Payment initialization failed')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Payment initialization failed',
+          details: paytrResult.reason || 'Unknown error'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      )
     }
   } catch (error) {
     console.error('Error in handle-paytr function:', error)
@@ -111,7 +176,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       }
     )
   }
