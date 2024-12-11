@@ -27,7 +27,13 @@ export const Header = () => {
     
     setIsLoggingOut(true);
     try {
-      await supabase.auth.signOut();
+      // Clear local session state first
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Attempt to sign out from Supabase
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      // Always navigate to login page
       navigate("/login", { replace: true });
     } catch (error: any) {
       console.error("Logout failed:", error);
