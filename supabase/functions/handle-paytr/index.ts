@@ -43,15 +43,12 @@ serve(async (req) => {
     // PayTR requires amount in cents (1 USD = 100 cents)
     const amount = 5000 // $50.00
 
-    // Get user's IP address from request headers or use a fallback for testing
-    let userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
-    
-    // If we're in development (localhost), use a real-looking IP for testing
-    if (userIp === '127.0.0.1' || userIp === 'localhost') {
-      userIp = '1.2.3.4' // Use a dummy IP for testing
-    }
+    // Get user's IP address from request headers
+    const userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '1.2.3.4'
 
-    const origin = req.headers.get('origin') || 'https://your-production-domain.com'
+    // Get the origin, defaulting to tracefluence.com
+    const origin = req.headers.get('origin') || 'https://tracefluence.com'
+    console.log('Request origin:', origin)
 
     // Prepare payment data
     const paytrData = {
@@ -65,11 +62,16 @@ serve(async (req) => {
       merchant_fail_url: `${origin}/home`,
       user_basket: JSON.stringify([["Lifetime Access", "1", amount]]),
       user_ip: userIp,
-      debug_on: 1,
-      test_mode: 1,
+      debug_on: 0, // Set to 0 for production
+      test_mode: 0, // Set to 0 for production
       no_installment: 0,
       max_installment: 0
     }
+
+    console.log('PayTR request data:', {
+      ...paytrData,
+      merchant_id: '***hidden***', // Hide sensitive data in logs
+    })
 
     // Generate hash string
     const hashStr = `${Deno.env.get('PAYTR_MERCHANT_ID')}${paytrData.merchant_oid}${paytrData.payment_amount}${paytrData.merchant_ok_url}${paytrData.merchant_fail_url}${paytrData.email}${Deno.env.get('PAYTR_MERCHANT_SALT')}`
@@ -81,8 +83,6 @@ serve(async (req) => {
     // Add token to payment data
     paytrData.paytr_token = hashHex
 
-    console.log('Sending payment data to PayTR:', paytrData)
-
     // Make request to PayTR API
     const paytrResponse = await fetch('https://www.paytr.com/odeme/api/get-token', {
       method: 'POST',
@@ -90,7 +90,7 @@ serve(async (req) => {
     })
 
     const paytrResult = await paytrResponse.json()
-    console.log('PayTR response:', paytrResult)
+    console.log('PayTR API response:', paytrResult)
 
     if (paytrResult.status === 'success') {
       return new Response(
