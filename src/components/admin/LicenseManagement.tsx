@@ -12,6 +12,27 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+interface Profile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  company: string | null;
+  created_at: string;
+}
+
+interface PaymentReceipt {
+  id: string;
+  user_id: string | null;
+  profile_id: string;
+  file_path: string;
+  status: string;
+  amount: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  profile: Profile;
+}
+
 export const LicenseManagement = () => {
   const queryClient = useQueryClient();
 
@@ -22,12 +43,12 @@ export const LicenseManagement = () => {
         .from("payment_receipts")
         .select(`
           *,
-          profiles:profiles(*)
+          profile:profiles(*)
         `)
         .order("created_at", { ascending: false });
 
       if (receiptsError) throw receiptsError;
-      return receiptsData;
+      return receiptsData as PaymentReceipt[];
     },
   });
 
@@ -92,10 +113,10 @@ export const LicenseManagement = () => {
           {receipts?.map((receipt) => (
             <TableRow key={receipt.id}>
               <TableCell>
-                {receipt.profiles?.email}
+                {receipt.profile?.email}
                 <br />
                 <span className="text-sm text-muted-foreground">
-                  {receipt.profiles?.full_name}
+                  {receipt.profile?.full_name}
                 </span>
               </TableCell>
               <TableCell>${receipt.amount}</TableCell>
