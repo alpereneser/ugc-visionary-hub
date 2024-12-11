@@ -1,4 +1,4 @@
-import { Layout, LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { Layout, LogOut, Menu, MessageSquare, Settings, User, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import {
@@ -16,6 +16,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -25,6 +32,7 @@ export const Header = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState<string>("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -43,6 +51,13 @@ export const Header = () => {
     if (!name) return "T";
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
+
+  const navigationItems = [
+    { path: '/home', label: 'Dashboard', icon: Layout },
+    { path: '/creators', label: 'Creators' },
+    { path: '/products', label: 'Products' },
+    { path: '/campaigns', label: 'Campaigns' },
+  ];
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -77,31 +92,51 @@ export const Header = () => {
           </div>
 
           {session && (
-            <NavigationMenu className="hidden md:flex">
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <Link to="/home" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
-                    <Layout className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/creators" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
-                    Creators
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/products" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
-                    Products
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/campaigns" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
-                    Campaigns
-                  </Link>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+            <>
+              {/* Desktop Navigation */}
+              <NavigationMenu className="hidden md:flex">
+                <NavigationMenuList>
+                  {navigationItems.map((item) => (
+                    <NavigationMenuItem key={item.path}>
+                      <Link 
+                        to={item.path} 
+                        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                      >
+                        {item.icon && <item.icon className="w-4 h-4 mr-2" />}
+                        {item.label}
+                      </Link>
+                    </NavigationMenuItem>
+                  ))}
+                </NavigationMenuList>
+              </NavigationMenu>
+
+              {/* Mobile Navigation */}
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild className="md:hidden">
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-4 mt-4">
+                    {navigationItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md hover:bg-accent"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.icon && <item.icon className="w-4 h-4" />}
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </>
           )}
           
           <div className="flex items-center gap-4">
