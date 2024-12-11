@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
-import { Package, Users, Flag, Plus } from "lucide-react";
+import { Package, Users, Flag, Plus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/home/StatsCard";
@@ -107,21 +107,35 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Header />
       <main className="container mx-auto px-4 py-8 pt-24">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
-          <div className="space-x-4">
-            <Button onClick={() => navigate("/creators/new")}>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your campaigns and creators from one place.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              onClick={() => navigate("/creators/new")}
+              className="bg-white text-black border shadow-sm hover:bg-gray-100"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Creator
             </Button>
-            <Button onClick={() => navigate("/products/new")}>
+            <Button 
+              onClick={() => navigate("/products/new")}
+              className="bg-white text-black border shadow-sm hover:bg-gray-100"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>
-            <Button onClick={() => navigate("/campaigns/new")}>
+            <Button 
+              onClick={() => navigate("/campaigns/new")}
+              variant="default"
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Campaign
             </Button>
@@ -141,8 +155,12 @@ const Home = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <RecentCreators creators={recentCreators} />
-          <ActiveCampaigns campaigns={activeCampaigns} />
+          <div className="space-y-6">
+            <RecentCreators creators={recentCreators} />
+          </div>
+          <div className="space-y-6">
+            <ActiveCampaigns campaigns={activeCampaigns} />
+          </div>
         </div>
       </main>
     </div>
