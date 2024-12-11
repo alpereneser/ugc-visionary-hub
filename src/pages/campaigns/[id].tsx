@@ -34,16 +34,20 @@ const CampaignDetail = () => {
 
       if (error) throw error;
       
-      // Ensure additional_expenses is always an array of objects with name and amount
-      return {
+      // Transform the data to match the Campaign type
+      const transformedCampaign: Campaign = {
         ...campaign,
         additional_expenses: Array.isArray(campaign.additional_expenses) 
           ? campaign.additional_expenses.map((expense: any) => ({
               name: expense.name || '',
               amount: expense.amount || '0'
             }))
-          : []
-      } as Campaign;
+          : [],
+        campaign_creators: campaign.campaign_creators || [],
+        campaign_products: campaign.campaign_products || []
+      };
+
+      return transformedCampaign;
     },
   });
 
