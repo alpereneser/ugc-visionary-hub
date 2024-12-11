@@ -11,9 +11,11 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Received payment request');
+    
     // Parse request body
     const body: PayTRRequestBody = await req.json()
-    console.log('Received request body:', body)
+    console.log('Request body:', body)
 
     const { user_id } = body
     if (!user_id) {
@@ -76,6 +78,8 @@ serve(async (req) => {
       lang: 'en'
     }
 
+    console.log('Payment data prepared:', paymentData);
+
     // Generate hash
     const hashHex = await generatePayTRToken(
       merchantId,
@@ -94,7 +98,7 @@ serve(async (req) => {
     })
     params.append('paytr_token', hashHex)
 
-    console.log('Sending request to PayTR with params:', Object.fromEntries(params))
+    console.log('Making request to PayTR with params:', Object.fromEntries(params))
 
     // Make request to PayTR API
     const paytrResponse = await makePayTRRequest(params)
