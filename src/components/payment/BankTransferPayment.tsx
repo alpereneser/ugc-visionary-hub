@@ -27,6 +27,12 @@ export const BankTransferPayment = () => {
           </div>
         </div>
 
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+          <p className="text-blue-800 font-medium italic text-sm">
+            "Your payment will be verified after the transfer is completed. Once verified, your Lifetime License will be activated."
+          </p>
+        </div>
+
         <div className="space-y-2">
           <h3 className="font-semibold">Need Help?</h3>
           <div className="rounded-lg border p-4">
