@@ -7,47 +7,96 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const { user_id, payment_status } = await req.json()
+    const { user_id } = await req.json()
 
     if (!user_id) {
       throw new Error('User ID is required')
     }
 
-    // Update user license
-    const { error } = await supabaseClient
-      .from('user_licenses')
-      .update({ 
-        has_lifetime_access: payment_status === 'success',
-        payment_status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user_id)
-
-    if (error) throw error
-
-    return new Response(
-      JSON.stringify({ success: true }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+    // Initialize Supabase client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // Get user details
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', user_id)
+      .single()
+
+    if (userError || !userData) {
+      console.error('Error fetching user data:', userError)
+      throw new Error('User not found')
+    }
+
+    // Generate a unique payment ID
+    const merchantOid = `${user_id}-${Date.now()}`
+    
+    // PayTR requires amount in cents (1 USD = 100 cents)
+    const amount = 5000 // $50.00
+
+    // Prepare payment data
+    const paytrData = {
+      merchant_id: Deno.env.get('PAYTR_MERCHANT_ID'),
+      merchant_oid: merchantOid,
+      email: userData.email,
+      payment_amount: amount,
+      currency: "USD",
+      user_name: userData.full_name,
+      merchant_ok_url: `${req.headers.get('origin')}/home`,
+      merchant_fail_url: `${req.headers.get('origin')}/home`,
+      user_basket: JSON.stringify([["Lifetime Access", "1", amount]]),
+      debug_on: 1,
+      test_mode: 1
+    }
+
+    // Generate hash string
+    const hashStr = `${Deno.env.get('PAYTR_MERCHANT_ID')}${paytrData.merchant_oid}${paytrData.payment_amount}${paytrData.merchant_ok_url}${paytrData.merchant_fail_url}${paytrData.email}${Deno.env.get('PAYTR_MERCHANT_SALT')}`
+    const hash = new TextEncoder().encode(hashStr)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', hash)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+    // Add token to payment data
+    paytrData.paytr_token = hashHex
+
+    // Make request to PayTR API
+    const paytrResponse = await fetch('https://www.paytr.com/odeme/api/get-token', {
+      method: 'POST',
+      body: new URLSearchParams(paytrData),
+    })
+
+    const paytrResult = await paytrResponse.json()
+    console.log('PayTR response:', paytrResult)
+
+    if (paytrResult.status === 'success') {
+      return new Response(
+        JSON.stringify({
+          paymentUrl: `https://www.paytr.com/odeme/guvenli/${paytrResult.token}`,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      )
+    } else {
+      throw new Error(paytrResult.reason || 'Payment initialization failed')
+    }
   } catch (error) {
+    console.error('Error in handle-paytr function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 400,
       }
     )
   }
