@@ -1,7 +1,11 @@
 import { Mail } from "lucide-react";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { format } from "date-fns";
 
 export const BankTransferPayment = () => {
+  const today = new Date();
+  const formattedDate = format(today, 'MMMM d, yyyy');
+
   return (
     <div className="space-y-6">
       <DialogHeader>
@@ -9,6 +13,20 @@ export const BankTransferPayment = () => {
       </DialogHeader>
 
       <div className="space-y-4">
+        <div className="rounded-lg border p-4 space-y-3">
+          <div>
+            <p className="text-sm font-medium">Payment Amount</p>
+            <p className="text-2xl font-bold text-primary">$50.00</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium">License Details</p>
+            <div className="text-sm text-muted-foreground">
+              <p>Start Date: {formattedDate}</p>
+              <p>End Date: Lifetime Access</p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <h3 className="font-semibold">Bank Account Details</h3>
           <div className="rounded-lg border p-4 space-y-3">
