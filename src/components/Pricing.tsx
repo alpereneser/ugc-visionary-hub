@@ -20,10 +20,17 @@ export const Pricing = () => {
       const { data, error } = await supabase
         .from("user_licenses")
         .select("*")
-        .eq("user_id", session.user.id);
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching license:", error);
+        toast.error("Failed to fetch license information");
+        return null;
+      }
 
       // If no license exists, create one
-      if ((!data || data.length === 0) && !error) {
+      if (!data) {
         const { data: newLicense, error: createError } = await supabase
           .from("user_licenses")
           .insert([
@@ -38,16 +45,17 @@ export const Pricing = () => {
 
         if (createError) {
           console.error("Error creating license:", createError);
-          throw createError;
+          toast.error("Failed to create trial license");
+          return null;
         }
 
         return newLicense;
       }
 
-      if (error) throw error;
-      return data[0];
+      return data;
     },
     enabled: !!session?.user?.id,
+    retry: 1,
   });
 
   const handlePurchase = async () => {
@@ -62,7 +70,11 @@ export const Pricing = () => {
         body: { userId: session.user.id }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error("Payment error:", response.error);
+        toast.error("Failed to initiate payment process");
+        return;
+      }
 
       if (response.data?.paymentUrl) {
         toast.success("Redirecting to payment page...");
@@ -73,8 +85,8 @@ export const Pricing = () => {
       
       refetch();
     } catch (error) {
-      toast.error("Error initiating payment process");
-      console.error(error);
+      console.error("Payment error:", error);
+      toast.error("Failed to process payment request");
     } finally {
       setIsLoading(false);
     }
