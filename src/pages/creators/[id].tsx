@@ -108,35 +108,6 @@ const CreatorDetail = () => {
                 </CardContent>
               </Card>
             )}
-
-            {creator.bio && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Bio</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {creator.bio}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {creator.interests && creator.interests.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Interests</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {creator.interests.map((interest: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm"
-                      >
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </main>

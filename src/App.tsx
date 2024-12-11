@@ -12,12 +12,15 @@ import Home from "./pages/Home";
 import Creators from "./pages/Creators";
 import NewCreator from "./pages/creators/new";
 import CreatorDetail from "./pages/creators/[id]";
+import EditCreator from "./pages/creators/edit/[id]";
 import Products from "./pages/products";
 import NewProduct from "./pages/products/new";
 import ProductDetail from "./pages/products/[id]";
+import EditProduct from "./pages/products/edit/[id]";
 import Campaigns from "./pages/campaigns";
 import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
+import EditCampaign from "./pages/campaigns/edit/[id]";
 import { supabase } from "./integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -92,6 +95,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/creators/edit/:id"
+                element={
+                  <AuthWrapper>
+                    <EditCreator />
+                  </AuthWrapper>
+                }
+              />
+              <Route
                 path="/products"
                 element={
                   <AuthWrapper>
@@ -116,6 +127,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/products/edit/:id"
+                element={
+                  <AuthWrapper>
+                    <EditProduct />
+                  </AuthWrapper>
+                }
+              />
+              <Route
                 path="/campaigns"
                 element={
                   <AuthWrapper>
@@ -136,6 +155,14 @@ const App = () => {
                 element={
                   <AuthWrapper>
                     <CampaignDetail />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/campaigns/edit/:id"
+                element={
+                  <AuthWrapper>
+                    <EditCampaign />
                   </AuthWrapper>
                 }
               />
