@@ -49,8 +49,19 @@ export const UsersManagement = () => {
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userToDelete);
-      if (error) throw error;
+      const response = await fetch('/functions/v1/admin-operations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          action: 'deleteUser',
+          userId: userToDelete,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to delete user');
 
       toast.success("User deleted successfully");
       refetch();
@@ -63,17 +74,25 @@ export const UsersManagement = () => {
     }
   };
 
-  const handlePasswordReset = async (userId: string) => {
+  const handlePasswordReset = async (email: string) => {
     if (isResettingPassword) return;
 
     setIsResettingPassword(true);
     try {
-      const { error } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        userId,
+      const response = await fetch('/functions/v1/admin-operations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          action: 'resetPassword',
+          userId: email, // We pass the email here
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error('Failed to send password reset');
+
       toast.success("Password reset email sent successfully");
     } catch (error) {
       console.error("Error sending password reset:", error);
@@ -121,7 +140,7 @@ export const UsersManagement = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handlePasswordReset(user.id)}
+                      onClick={() => handlePasswordReset(user.email)}
                       disabled={isResettingPassword}
                     >
                       <Key className="h-4 w-4" />
