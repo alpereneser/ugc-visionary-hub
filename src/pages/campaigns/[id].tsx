@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { CostBreakdown } from "@/components/campaigns/CostBreakdown";
 import { CampaignActions } from "@/components/campaigns/CampaignActions";
+import type { Campaign } from "@/types/campaign";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -33,13 +34,16 @@ const CampaignDetail = () => {
 
       if (error) throw error;
       
-      // Ensure additional_expenses is always an array
+      // Ensure additional_expenses is always an array of objects with name and amount
       return {
         ...campaign,
         additional_expenses: Array.isArray(campaign.additional_expenses) 
-          ? campaign.additional_expenses 
+          ? campaign.additional_expenses.map((expense: any) => ({
+              name: expense.name || '',
+              amount: expense.amount || '0'
+            }))
           : []
-      };
+      } as Campaign;
     },
   });
 
