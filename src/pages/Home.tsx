@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
-import { Package, Users, Flag, Plus, Mail } from "lucide-react";
+import { Package, Users, Flag, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/home/StatsCard";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
 import { Pricing } from "@/components/Pricing";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Home = () => {
   const session = useSession();
@@ -49,7 +48,7 @@ const Home = () => {
     }
   }, [session, navigate, license]);
 
-  // If trial ended and no lifetime access, show only pricing and support
+  // If trial ended and no lifetime access, show only pricing
   if (license && 
       !license.has_lifetime_access && 
       new Date(license.trial_end_date) < new Date()) {
@@ -57,27 +56,7 @@ const Home = () => {
       <div className="min-h-screen bg-[#F8FAFC]">
         <Header />
         <main className="container mx-auto px-4 py-8 pt-24">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Contact Support
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Need help? Contact our support team at:
-                </p>
-                <a 
-                  href="mailto:support@tracefluence.com" 
-                  className="text-primary hover:underline flex items-center gap-2"
-                >
-                  <Mail className="h-4 w-4" />
-                  support@tracefluence.com
-                </a>
-              </CardContent>
-            </Card>
+          <div className="max-w-4xl mx-auto">
             <Pricing />
           </div>
         </main>
@@ -226,29 +205,6 @@ const Home = () => {
           <div className="space-y-6">
             <ActiveCampaigns campaigns={activeCampaigns} />
           </div>
-        </div>
-
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Contact Support
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Need help? Contact our support team at:
-              </p>
-              <a 
-                href="mailto:support@tracefluence.com" 
-                className="text-primary hover:underline flex items-center gap-2"
-              >
-                <Mail className="h-4 w-4" />
-                support@tracefluence.com
-              </a>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="mt-8">
