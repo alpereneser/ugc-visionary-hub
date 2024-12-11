@@ -43,8 +43,15 @@ serve(async (req) => {
     // PayTR requires amount in cents (1 USD = 100 cents)
     const amount = 5000 // $50.00
 
-    // Get user's IP address from request headers
-    const userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+    // Get user's IP address from request headers or use a fallback for testing
+    let userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+    
+    // If we're in development (localhost), use a real-looking IP for testing
+    if (userIp === '127.0.0.1' || userIp === 'localhost') {
+      userIp = '1.2.3.4' // Use a dummy IP for testing
+    }
+
+    const origin = req.headers.get('origin') || 'https://your-production-domain.com'
 
     // Prepare payment data
     const paytrData = {
@@ -54,8 +61,8 @@ serve(async (req) => {
       payment_amount: amount,
       currency: "USD",
       user_name: userData.full_name,
-      merchant_ok_url: `${req.headers.get('origin')}/home`,
-      merchant_fail_url: `${req.headers.get('origin')}/home`,
+      merchant_ok_url: `${origin}/home`,
+      merchant_fail_url: `${origin}/home`,
       user_basket: JSON.stringify([["Lifetime Access", "1", amount]]),
       user_ip: userIp,
       debug_on: 1,
