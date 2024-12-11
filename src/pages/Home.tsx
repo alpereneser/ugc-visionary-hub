@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
-import { Package, Users, Flag, Plus, TrendingUp } from "lucide-react";
+import { Package, Users, Flag, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/home/StatsCard";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
+import { ArticlesSection } from "@/components/home/ArticlesSection";
 
 const Home = () => {
   const session = useSession();
@@ -154,13 +155,17 @@ const Home = () => {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
           <div className="space-y-6">
             <RecentCreators creators={recentCreators} />
           </div>
           <div className="space-y-6">
             <ActiveCampaigns campaigns={activeCampaigns} />
           </div>
+        </div>
+
+        <div className="mt-12 pt-6 border-t">
+          <ArticlesSection />
         </div>
       </main>
     </div>
