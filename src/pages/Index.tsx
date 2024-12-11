@@ -1,17 +1,15 @@
 import { Hero } from "@/components/Hero";
 import { Features } from "@/components/Features";
-import { Pricing } from "@/components/Pricing";
-import { MainLayout } from "@/components/layouts/MainLayout";
 import { HeroSlider } from "@/components/HeroSlider";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const Index = () => {
   return (
     <MainLayout showHeader={false}>
-      <div>
+      <div className="bg-black min-h-screen">
         <Hero />
         <HeroSlider />
         <Features />
-        <Pricing />
       </div>
     </MainLayout>
   );

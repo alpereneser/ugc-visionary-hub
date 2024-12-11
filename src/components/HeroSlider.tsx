@@ -5,34 +5,29 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-
-const placeholderImages = [
-  "photo-1649972904349-6e44c42644a7",
-  "photo-1488590528505-98d2b5aba04b",
-  "photo-1518770660439-4636190af475",
-  "photo-1461749280684-dccba630e2f6",
-  "photo-1486312338219-ce68d2c6f44d",
-  "photo-1581091226825-a6a2a5aee158",
-];
+import { Card } from "@/components/ui/card";
 
 const slides = [
   {
-    title: "Connect with Top Influencers",
-    description: "Build authentic relationships and amplify your brand's reach"
+    title: "Track Creator Performance",
+    description: "Monitor and analyze creator metrics to optimize your UGC strategy",
+    image: "photo-1649972904349-6e44c42644a7"
   },
   {
-    title: "Track Your Impact",
-    description: "Measure and optimize your influencer campaigns in real-time"
+    title: "Manage Campaigns",
+    description: "Streamline your UGC campaigns from planning to execution",
+    image: "photo-1486312338219-ce68d2c6f44d"
   },
   {
-    title: "Maximize ROI",
-    description: "Turn influence into measurable results with our advanced analytics"
+    title: "Measure ROI",
+    description: "Get detailed insights into your UGC investment returns",
+    image: "photo-1581091226825-a6a2a5aee158"
   }
 ];
 
 export const HeroSlider = () => {
   return (
-    <div className="w-full bg-black text-white py-20">
+    <div className="w-full bg-gradient-to-b from-blue-900 to-black text-white py-24">
       <div className="container mx-auto">
         <Carousel
           opts={{
@@ -44,11 +39,11 @@ export const HeroSlider = () => {
           <CarouselContent>
             {slides.map((slide, index) => (
               <CarouselItem key={index} className="md:basis-1/1">
-                <div className="relative flex flex-col items-center p-6">
+                <Card className="relative flex flex-col items-center p-6 bg-white/5 backdrop-blur-lg border-none">
                   <div className="relative w-full max-w-2xl mx-auto mb-8">
                     <div className="aspect-[16/9] relative overflow-hidden rounded-xl">
                       <img
-                        src={`https://images.unsplash.com/${placeholderImages[index]}`}
+                        src={`https://images.unsplash.com/${slide.image}`}
                         alt={slide.title}
                         className="object-cover w-full h-full transform hover:scale-105 transition-transform duration-500"
                       />
@@ -61,7 +56,7 @@ export const HeroSlider = () => {
                       {slide.description}
                     </p>
                   </div>
-                </div>
+                </Card>
               </CarouselItem>
             ))}
           </CarouselContent>
