@@ -36,11 +36,15 @@ export const Pricing = () => {
 
     setIsLoading(true);
     try {
-      // PayTR integration will go here
-      // For now, we'll just show a toast
-      toast.info("Payment integration coming soon!");
+      const response = await supabase.functions.invoke("handle-paytr", {
+        body: { user_id: session.user.id }
+      });
+
+      if (response.error) throw response.error;
+
+      toast.success("Ödeme işlemi başlatıldı");
     } catch (error) {
-      toast.error("Failed to process payment");
+      toast.error("Ödeme işlemi başlatılırken bir hata oluştu");
     } finally {
       setIsLoading(false);
     }
@@ -52,15 +56,15 @@ export const Pricing = () => {
   return (
     <div className="py-20 px-4 bg-accent">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-12">Simple Pricing</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-12">Basit Fiyatlandırma</h2>
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <div className="text-5xl font-bold text-primary mb-4">$50</div>
-          <div className="text-xl font-semibold mb-6">Lifetime Access</div>
+          <div className="text-5xl font-bold text-primary mb-4">₺50</div>
+          <div className="text-xl font-semibold mb-6">Ömür Boyu Erişim</div>
           <ul className="text-secondary space-y-4 mb-8">
-            <li>✓ Unlimited Campaign Tracking</li>
-            <li>✓ Performance Analytics</li>
-            <li>✓ Future Planning Tools</li>
-            <li>✓ Free Lifetime Updates</li>
+            <li>✓ Sınırsız Kampanya Takibi</li>
+            <li>✓ Performans Analizleri</li>
+            <li>✓ Gelecek Planlama Araçları</li>
+            <li>✓ Ücretsiz Ömür Boyu Güncellemeler</li>
           </ul>
           <Button
             onClick={handlePurchase}
@@ -68,19 +72,19 @@ export const Pricing = () => {
             className="w-full"
           >
             {hasLifetimeAccess
-              ? "You have lifetime access"
+              ? "Ömür boyu erişiminiz var"
               : isTrialActive
-              ? "Get Lifetime Access"
-              : "Trial Ended - Upgrade Now"}
+              ? "Ömür Boyu Erişim Al"
+              : "Deneme Süresi Bitti - Şimdi Yükselt"}
           </Button>
           {isTrialActive && (
             <p className="mt-4 text-sm text-muted-foreground">
-              Trial ends in{" "}
+              Deneme süresi{" "}
               {Math.ceil(
                 (new Date(license.trial_end_date).getTime() - new Date().getTime()) /
                   (1000 * 60 * 60 * 24)
               )}{" "}
-              days
+              gün sonra bitiyor
             </p>
           )}
         </div>
