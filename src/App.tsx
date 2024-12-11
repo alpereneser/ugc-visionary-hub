@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Settings from "./pages/Settings";
+import Feedback from "./pages/Feedback";
 import Home from "./pages/Home";
 import Creators from "./pages/Creators";
 import NewCreator from "./pages/creators/new";
@@ -68,6 +69,14 @@ const App = () => {
                 element={
                   <AuthWrapper>
                     <Settings />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/feedback"
+                element={
+                  <AuthWrapper>
+                    <Feedback />
                   </AuthWrapper>
                 }
               />

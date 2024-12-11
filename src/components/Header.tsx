@@ -1,4 +1,4 @@
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import {
@@ -85,6 +85,10 @@ export const Header = () => {
                   <DropdownMenuItem onClick={() => navigate('/settings')} className="flex items-center">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/feedback')} className="flex items-center">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    <span>Feedback</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
