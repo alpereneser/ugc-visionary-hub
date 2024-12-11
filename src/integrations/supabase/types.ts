@@ -190,6 +190,39 @@ export type Database = {
           },
         ]
       }
+      payment_receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          file_path: string
+          id: string
+          notes: string | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          file_path: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          file_path?: string
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           cost_price: number | null

@@ -5,18 +5,20 @@ import { Button } from "./ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { BankTransferPayment } from "./payment/BankTransferPayment";
 
 export const Pricing = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   const { data: license, refetch } = useQuery({
     queryKey: ["user-license", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
-      // First try to get existing license
       const { data, error } = await supabase
         .from("user_licenses")
         .select("*")
@@ -29,67 +31,18 @@ export const Pricing = () => {
         return null;
       }
 
-      // If no license exists, create one
-      if (!data) {
-        const { data: newLicense, error: createError } = await supabase
-          .from("user_licenses")
-          .insert([
-            { 
-              user_id: session.user.id,
-              trial_start_date: new Date().toISOString(),
-              trial_end_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 1 day trial
-            }
-          ])
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("Error creating license:", createError);
-          toast.error("Failed to create trial license");
-          return null;
-        }
-
-        return newLicense;
-      }
-
       return data;
     },
     enabled: !!session?.user?.id,
     retry: 1,
   });
 
-  const handlePurchase = async () => {
+  const handlePurchase = () => {
     if (!session) {
       navigate("/login");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      const response = await supabase.functions.invoke("handle-wise", {
-        body: { userId: session.user.id }
-      });
-
-      if (response.error) {
-        console.error("Payment error:", response.error);
-        toast.error("Failed to initiate payment process");
-        return;
-      }
-
-      if (response.data?.paymentUrl) {
-        toast.success("Redirecting to payment page...");
-        window.location.href = response.data.paymentUrl;
-      } else {
-        throw new Error("Payment URL not received");
-      }
-      
-      refetch();
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("Failed to process payment request");
-    } finally {
-      setIsLoading(false);
-    }
+    setShowPaymentDialog(true);
   };
 
   const isTrialActive = license && new Date(license.trial_end_date) > new Date();
@@ -108,17 +61,26 @@ export const Pricing = () => {
             <li>✓ Future Planning Tools</li>
             <li>✓ Free Lifetime Updates</li>
           </ul>
-          <Button
-            onClick={handlePurchase}
-            disabled={isLoading || hasLifetimeAccess}
-            className="w-full"
-          >
-            {hasLifetimeAccess
-              ? "You have lifetime access"
-              : isTrialActive
-              ? "Get Lifetime Access"
-              : "Trial Ended - Upgrade Now"}
-          </Button>
+          
+          <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={handlePurchase}
+                disabled={isLoading || hasLifetimeAccess}
+                className="w-full"
+              >
+                {hasLifetimeAccess
+                  ? "You have lifetime access"
+                  : isTrialActive
+                  ? "Get Lifetime Access"
+                  : "Trial Ended - Upgrade Now"}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <BankTransferPayment />
+            </DialogContent>
+          </Dialog>
+
           {isTrialActive && license && (
             <p className="mt-4 text-sm text-muted-foreground">
               Trial ends in{" "}
