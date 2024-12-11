@@ -4,9 +4,15 @@ import { RecentCreators } from "@/components/home/RecentCreators";
 import { StatsCard } from "@/components/home/StatsCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Package, BarChart3 } from "lucide-react";
+import { Users, Package, BarChart3, Lock } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const session = useSession();
+  const navigate = useNavigate();
+  
   const { data: creators } = useQuery({
     queryKey: ["recent-creators"],
     queryFn: async () => {
@@ -21,10 +27,24 @@ const Home = () => {
     },
   });
 
+  const isAdmin = session?.user?.email === "alperen@tracefluence.com";
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          {isAdmin && (
+            <Button
+              onClick={() => navigate("/admin")}
+              variant="outline"
+              className="gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              Admin Panel
+            </Button>
+          )}
+        </div>
         <div className="grid gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard
