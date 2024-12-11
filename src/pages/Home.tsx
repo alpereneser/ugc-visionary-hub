@@ -3,23 +3,87 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
-import { Package, Users, Flag, Plus } from "lucide-react";
+import { Package, Users, Flag, Plus, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/home/StatsCard";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
 import { Pricing } from "@/components/Pricing";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Home = () => {
   const session = useSession();
   const navigate = useNavigate();
 
+  // Query to check user's license status
+  const { data: license } = useQuery({
+    queryKey: ["user-license", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("user_licenses")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
   useEffect(() => {
     if (!session) {
       navigate("/login");
+      return;
     }
-  }, [session, navigate]);
+
+    // Check if trial has ended and user doesn't have lifetime access
+    if (license && 
+        !license.has_lifetime_access && 
+        new Date(license.trial_end_date) < new Date()) {
+      // If trial ended and no lifetime access, show only pricing section
+      return;
+    }
+  }, [session, navigate, license]);
+
+  // If trial ended and no lifetime access, show only pricing and support
+  if (license && 
+      !license.has_lifetime_access && 
+      new Date(license.trial_end_date) < new Date()) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC]">
+        <Header />
+        <main className="container mx-auto px-4 py-8 pt-24">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Contact Support
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Need help? Contact our support team at:
+                </p>
+                <a 
+                  href="mailto:support@tracefluence.com" 
+                  className="text-primary hover:underline flex items-center gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  support@tracefluence.com
+                </a>
+              </CardContent>
+            </Card>
+            <Pricing />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const { data: creatorsCount } = useQuery({
     queryKey: ["creators-count"],
@@ -164,8 +228,32 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Add Pricing section */}
-        <Pricing />
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Contact Support
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Need help? Contact our support team at:
+              </p>
+              <a 
+                href="mailto:support@tracefluence.com" 
+                className="text-primary hover:underline flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                support@tracefluence.com
+              </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-8">
+          <Pricing />
+        </div>
       </main>
     </div>
   );
