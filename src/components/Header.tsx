@@ -1,18 +1,6 @@
-import { Layout, LogOut, Menu, MessageSquare, Settings, User, Users, Package, Flag } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-} from "@/components/ui/navigation-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -20,10 +8,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { UserMenu } from "./header/UserMenu";
+import { NavigationItems, navigationItems } from "./header/NavigationItems";
 
 export const Header = () => {
   const session = useSession();
@@ -31,21 +20,23 @@ export const Header = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple logout attempts
+    
+    setIsLoggingOut(true);
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Logout error:", error);
-        throw error;
-      }
-      // Even if there's an error with the server-side logout,
-      // we'll redirect the user to ensure they can't access protected routes
+      if (error) throw error;
+      
       navigate("/login");
     } catch (error: any) {
       console.error("Logout failed:", error);
-      toast.error("An error occurred during logout. Please try again.");
-      // Force redirect to login page even if logout fails
+      toast.error("An error occurred during logout");
+    } finally {
+      setIsLoggingOut(false);
+      // Force navigation to login even if there was an error
       navigate("/login");
     }
   };
@@ -58,30 +49,21 @@ export const Header = () => {
     }
   };
 
-  const getInitials = (name: string) => {
-    if (!name) return "T";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
-  const navigationItems = [
-    { path: '/home', label: 'Dashboard', icon: Layout },
-    { path: '/creators', label: 'Creators', icon: Users },
-    { path: '/products', label: 'Products', icon: Package },
-    { path: '/campaigns', label: 'Campaigns', icon: Flag },
-  ];
-
   useEffect(() => {
     const loadProfile = async () => {
-      if (session?.user?.id) {
+      if (!session?.user?.id) return;
+
+      try {
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', session.user.id)
           .single();
 
-        if (!error && data) {
-          setFullName(data.full_name || "");
-        }
+        if (error) throw error;
+        if (data) setFullName(data.full_name || "");
+      } catch (error) {
+        console.error("Error loading profile:", error);
       }
     };
 
@@ -102,25 +84,10 @@ export const Header = () => {
             <span className="font-['Montserrat'] font-bold text-xl">TRACEFLUENCE</span>
           </div>
 
-          {session && (
+          {session ? (
             <>
-              {/* Desktop Navigation */}
-              <NavigationMenu className="hidden md:flex">
-                <NavigationMenuList>
-                  {navigationItems.map((item) => (
-                    <NavigationMenuItem key={item.path}>
-                      <Link 
-                        to={item.path} 
-                        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
-                      >
-                        {item.icon && <item.icon className="w-4 h-4 mr-2" />}
-                        {item.label}
-                      </Link>
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
-              </NavigationMenu>
-
+              <NavigationItems />
+              
               {/* Mobile Navigation */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild className="md:hidden">
@@ -147,61 +114,29 @@ export const Header = () => {
                   </nav>
                 </SheetContent>
               </Sheet>
+
+              <UserMenu 
+                fullName={fullName} 
+                email={session.user.email} 
+                onLogout={handleLogout}
+              />
             </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/login" 
+                className="text-foreground hover:text-primary transition-colors"
+              >
+                Login
+              </Link>
+              <Link 
+                to="/register" 
+                className="bg-primary text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
+              >
+                Get Started
+              </Link>
+            </div>
           )}
-          
-          <div className="flex items-center gap-4">
-            {session ? (
-              <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="border border-gray-200">{getInitials(fullName)}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuItem className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{fullName || session.user.email}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/settings')} className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/feedback')} className="flex items-center">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span>Feedback</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <span className="text-sm font-medium hidden md:block border border-gray-200 rounded-[10px] py-2 px-4">
-                  {fullName || session.user.email}
-                </span>
-              </>
-            ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className="text-foreground hover:text-primary transition-colors"
-                >
-                  Login
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="bg-primary text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
         </div>
       </div>
     </header>

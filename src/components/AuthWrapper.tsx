@@ -14,23 +14,33 @@ export const AuthWrapper = ({ children }: AuthWrapperProps) => {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         if (!isSessionLoading) {
-          if (!session) {
+          if (!session && mounted) {
             toast.error("Please login to continue");
             navigate("/login", { replace: true });
           }
-          setIsChecking(false);
+          if (mounted) {
+            setIsChecking(false);
+          }
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        toast.error("Authentication error occurred");
-        navigate("/login", { replace: true });
+        if (mounted) {
+          toast.error("Authentication error occurred");
+          navigate("/login", { replace: true });
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, [session, isSessionLoading, navigate]);
 
   if (isChecking || isSessionLoading) {
