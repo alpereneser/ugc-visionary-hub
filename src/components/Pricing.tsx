@@ -45,7 +45,7 @@ export const Pricing = () => {
       }
 
       if (error) throw error;
-      return data[0]; // Return the first license if multiple exist
+      return data[0];
     },
     enabled: !!session?.user?.id,
   });
@@ -58,13 +58,12 @@ export const Pricing = () => {
 
     setIsLoading(true);
     try {
-      const response = await supabase.functions.invoke("handle-paytr", {
-        body: { user_id: session.user.id }
+      const response = await supabase.functions.invoke("handle-wise", {
+        body: { userId: session.user.id }
       });
 
       if (response.error) throw response.error;
 
-      // Check if the response contains a payment URL
       if (response.data?.paymentUrl) {
         toast.success("Redirecting to payment page...");
         window.location.href = response.data.paymentUrl;
@@ -72,7 +71,7 @@ export const Pricing = () => {
         throw new Error("Payment URL not received");
       }
       
-      refetch(); // Refresh license data after payment
+      refetch();
     } catch (error) {
       toast.error("Error initiating payment process");
       console.error(error);
