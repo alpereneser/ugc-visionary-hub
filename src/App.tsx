@@ -24,14 +24,30 @@ import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
 import EditCampaign from "./pages/campaigns/edit/[id]";
 import { supabase } from "./integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
   const handleAuthStateChange = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/login';
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Auth state check failed:', error);
+      setIsLoading(false);
       window.location.href = '/login';
     }
   };
@@ -41,12 +57,17 @@ const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
+        queryClient.clear();
         window.location.href = '/login';
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return <>{children}</>;
 };
@@ -56,14 +77,15 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider supabaseClient={supabase} initialSession={null}>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+          <div className="relative z-0">
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route
                 path="/settings"
                 element={
@@ -184,8 +206,9 @@ const App = () => {
                   </AuthWrapper>
                 }
               />
-            </Routes>
-          </BrowserRouter>
+              </Routes>
+            </BrowserRouter>
+          </div>
         </TooltipProvider>
       </SessionContextProvider>
     </QueryClientProvider>

@@ -8,7 +8,7 @@ import { Plus } from "lucide-react";
 export const ProductsList = () => {
   const navigate = useNavigate();
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,7 +21,19 @@ export const ProductsList = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-center min-h-[200px] flex items-center justify-center">
+        Error loading products. Please try again.
+      </div>
+    );
   }
 
   return (
@@ -38,7 +50,7 @@ export const ProductsList = () => {
         {products?.map((product) => (
           <Card
             key={product.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer hover:shadow-lg transition-shadow relative z-0"
             onClick={() => navigate(`/products/${product.id}`)}
           >
             <CardContent className="p-6">
