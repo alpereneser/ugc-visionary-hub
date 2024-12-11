@@ -13,19 +13,101 @@ import { Pricing } from "@/components/Pricing";
 const Home = () => {
   const session = useSession();
   const navigate = useNavigate();
-  
-  const { data: creators } = useQuery({
-    queryKey: ["recent-creators"],
+
+  // Fetch campaigns data
+  const { data: campaignsData } = useQuery({
+    queryKey: ["dashboard-campaigns", session?.user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ugc_creators")
+      const { data: currentData, error: currentError } = await supabase
+        .from("campaigns")
         .select("*")
-        .order("created_at", { ascending: false })
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
         .limit(5);
 
-      if (error) throw error;
-      return data;
+      const { count: totalLastMonth } = await supabase
+        .from("campaigns")
+        .select("*", { count: 'exact', head: true })
+        .eq('status', 'active')
+        .lte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
+
+      const { count: totalCurrent } = await supabase
+        .from("campaigns")
+        .select("*", { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      if (currentError) throw currentError;
+
+      const percentageChange = totalLastMonth > 0 
+        ? ((totalCurrent - totalLastMonth) / totalLastMonth) * 100 
+        : 0;
+
+      return {
+        campaigns: currentData,
+        total: totalCurrent,
+        percentageChange
+      };
     },
+    enabled: !!session?.user?.id,
+  });
+
+  // Fetch creators data
+  const { data: creatorsData } = useQuery({
+    queryKey: ["dashboard-creators", session?.user?.id],
+    queryFn: async () => {
+      const { data: currentData, error: currentError } = await supabase
+        .from("ugc_creators")
+        .select("*")
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { count: totalLastMonth } = await supabase
+        .from("ugc_creators")
+        .select("*", { count: 'exact', head: true })
+        .lte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
+
+      const { count: totalCurrent } = await supabase
+        .from("ugc_creators")
+        .select("*", { count: 'exact', head: true });
+
+      if (currentError) throw currentError;
+
+      const percentageChange = totalLastMonth > 0 
+        ? ((totalCurrent - totalLastMonth) / totalLastMonth) * 100 
+        : 0;
+
+      return {
+        creators: currentData,
+        total: totalCurrent,
+        percentageChange
+      };
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  // Fetch products data
+  const { data: productsData } = useQuery({
+    queryKey: ["dashboard-products", session?.user?.id],
+    queryFn: async () => {
+      const { count: totalLastMonth } = await supabase
+        .from("products")
+        .select("*", { count: 'exact', head: true })
+        .lte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
+
+      const { count: totalCurrent } = await supabase
+        .from("products")
+        .select("*", { count: 'exact', head: true });
+
+      const percentageChange = totalLastMonth > 0 
+        ? ((totalCurrent - totalLastMonth) / totalLastMonth) * 100 
+        : 0;
+
+      return {
+        total: totalCurrent,
+        percentageChange
+      };
+    },
+    enabled: !!session?.user?.id,
   });
 
   const { data: license } = useQuery({
@@ -69,35 +151,35 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard
               title="Active Campaigns"
-              value="12"
-              description="+2.5% from last month"
-              type="increase"
+              value={campaignsData?.total?.toString() || "0"}
+              description={`${campaignsData?.percentageChange.toFixed(1)}% from last month`}
+              type={campaignsData?.percentageChange >= 0 ? "increase" : "decrease"}
               icon={BarChart3}
               link="/campaigns"
             />
             <StatsCard
               title="Total Creators"
-              value="48"
-              description="+12% from last month"
-              type="increase"
+              value={creatorsData?.total?.toString() || "0"}
+              description={`${creatorsData?.percentageChange.toFixed(1)}% from last month`}
+              type={creatorsData?.percentageChange >= 0 ? "increase" : "decrease"}
               icon={Users}
               link="/creators"
             />
             <StatsCard
               title="Products Tracked"
-              value="156"
-              description="-4% from last month"
-              type="decrease"
+              value={productsData?.total?.toString() || "0"}
+              description={`${productsData?.percentageChange.toFixed(1)}% from last month`}
+              type={productsData?.percentageChange >= 0 ? "increase" : "decrease"}
               icon={Package}
               link="/products"
             />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <ActiveCampaigns />
+              <ActiveCampaigns campaigns={campaignsData?.campaigns} />
             </div>
             <div>
-              <RecentCreators creators={creators} />
+              <RecentCreators creators={creatorsData?.creators} />
             </div>
           </div>
         </div>
