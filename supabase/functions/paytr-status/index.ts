@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { PayTRStatusResponse } from "./types.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,7 +88,7 @@ serve(async (req) => {
     const responseText = await paytrResponse.text()
     console.log('PayTR API raw response:', responseText)
 
-    let paytrResult;
+    let paytrResult: PayTRStatusResponse;
     try {
       paytrResult = JSON.parse(responseText)
     } catch (e) {
@@ -108,7 +109,20 @@ serve(async (req) => {
 
     if (paytrResult.status === 'success') {
       return new Response(
-        JSON.stringify(paytrResult),
+        JSON.stringify({
+          status: paytrResult.status,
+          payment_amount: paytrResult.payment_amount,
+          payment_total: paytrResult.payment_total,
+          payment_date: paytrResult.payment_date,
+          currency: paytrResult.currency,
+          taksit: paytrResult.taksit,
+          kart_marka: paytrResult.kart_marka,
+          masked_pan: paytrResult.masked_pan,
+          odeme_tipi: paytrResult.odeme_tipi,
+          test_mode: paytrResult.test_mode,
+          returns: paytrResult.returns,
+          reference_no: paytrResult.reference_no
+        }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
@@ -118,6 +132,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: paytrResult.err_msg || 'Payment status check failed',
+          error_code: paytrResult.err_no,
           details: paytrResult
         }),
         {
