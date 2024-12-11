@@ -94,7 +94,7 @@ export const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
+                        <AvatarFallback className="border border-gray-200">{getInitials(fullName)}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
