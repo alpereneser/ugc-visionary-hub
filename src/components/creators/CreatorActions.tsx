@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CreatorActionsProps {
   creatorId: string;
@@ -27,9 +28,14 @@ interface CreatorActionsProps {
 
 export const CreatorActions = ({ creatorId }: CreatorActionsProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
     try {
       // Delete related records first
       await supabase.from("campaign_creators").delete().eq("creator_id", creatorId);
@@ -44,11 +50,21 @@ export const CreatorActions = ({ creatorId }: CreatorActionsProps) => {
 
       if (error) throw error;
 
+      // Invalidate queries
+      await queryClient.invalidateQueries({ queryKey: ["creators"] });
+      
       toast.success("İçerik üreticisi başarıyla silindi");
-      navigate("/creators");
+      
+      // Use setTimeout to ensure state updates and navigation happen after the current execution
+      setTimeout(() => {
+        setShowDeleteDialog(false);
+        setIsDeleting(false);
+        navigate("/creators", { replace: true });
+      }, 0);
     } catch (error) {
       console.error("Error deleting creator:", error);
       toast.error("İçerik üreticisi silinirken bir hata oluştu");
+      setIsDeleting(false);
     }
   };
 
@@ -84,12 +100,13 @@ export const CreatorActions = ({ creatorId }: CreatorActionsProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
             >
-              Sil
+              {isDeleting ? "Siliniyor..." : "Sil"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
