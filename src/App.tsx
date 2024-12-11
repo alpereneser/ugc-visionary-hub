@@ -47,130 +47,41 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route
-                  path="/settings"
-                  element={
-                    <AuthWrapper>
-                      <Settings />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/feedback"
-                  element={
-                    <AuthWrapper>
-                      <Feedback />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/home"
-                  element={
-                    <AuthWrapper>
-                      <Home />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/creators"
-                  element={
-                    <AuthWrapper>
-                      <Creators />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/creators/new"
-                  element={
-                    <AuthWrapper>
-                      <NewCreator />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/creators/:id"
-                  element={
-                    <AuthWrapper>
-                      <CreatorDetail />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/creators/edit/:id"
-                  element={
-                    <AuthWrapper>
-                      <EditCreator />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/products"
-                  element={
-                    <AuthWrapper>
-                      <Products />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/products/new"
-                  element={
-                    <AuthWrapper>
-                      <NewProduct />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/products/:id"
-                  element={
-                    <AuthWrapper>
-                      <ProductDetail />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/products/edit/:id"
-                  element={
-                    <AuthWrapper>
-                      <EditProduct />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/campaigns"
-                  element={
-                    <AuthWrapper>
-                      <Campaigns />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/campaigns/new"
-                  element={
-                    <AuthWrapper>
-                      <NewCampaign />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/campaigns/:id"
-                  element={
-                    <AuthWrapper>
-                      <CampaignDetail />
-                    </AuthWrapper>
-                  }
-                />
-                <Route
-                  path="/campaigns/edit/:id"
-                  element={
-                    <AuthWrapper>
-                      <EditCampaign />
-                    </AuthWrapper>
-                  }
-                />
+
+                {/* Protected routes */}
+                <Route path="/settings" element={<AuthWrapper><Settings /></AuthWrapper>} />
+                <Route path="/feedback" element={<AuthWrapper><Feedback /></AuthWrapper>} />
+                <Route path="/home" element={<AuthWrapper><Home /></AuthWrapper>} />
+                
+                {/* Creators routes */}
+                <Route path="/creators" element={<AuthWrapper><Creators /></AuthWrapper>} />
+                <Route path="/creators/new" element={<AuthWrapper><NewCreator /></AuthWrapper>} />
+                <Route path="/creators/:id" element={<AuthWrapper><CreatorDetail /></AuthWrapper>} />
+                <Route path="/creators/edit/:id" element={<AuthWrapper><EditCreator /></AuthWrapper>} />
+                
+                {/* Products routes */}
+                <Route path="/products" element={<AuthWrapper><Products /></AuthWrapper>} />
+                <Route path="/products/new" element={<AuthWrapper><NewProduct /></AuthWrapper>} />
+                <Route path="/products/:id" element={<AuthWrapper><ProductDetail /></AuthWrapper>} />
+                <Route path="/products/edit/:id" element={<AuthWrapper><EditProduct /></AuthWrapper>} />
+                
+                {/* Campaigns routes */}
+                <Route path="/campaigns" element={<AuthWrapper><Campaigns /></AuthWrapper>} />
+                <Route path="/campaigns/new" element={<AuthWrapper><NewCampaign /></AuthWrapper>} />
+                <Route path="/campaigns/:id" element={<AuthWrapper><CampaignDetail /></AuthWrapper>} />
+                <Route path="/campaigns/edit/:id" element={<AuthWrapper><EditCampaign /></AuthWrapper>} />
+
+                {/* Catch-all route - redirect to home if authenticated, otherwise to login */}
+                <Route path="*" element={
+                  <AuthWrapper>
+                    <Navigate to="/home" replace />
+                  </AuthWrapper>
+                } />
               </Routes>
             </BrowserRouter>
           </div>
