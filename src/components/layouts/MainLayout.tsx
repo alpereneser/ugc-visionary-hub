@@ -1,3 +1,4 @@
+import React from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useSession } from "@supabase/auth-helpers-react";
@@ -36,10 +37,11 @@ export const MainLayout = ({ children, showHeader = true }: MainLayoutProps) => 
     if (React.isValidElement(child) && hasLifetimeAccess) {
       // Remove Pricing component from children if it exists and user has lifetime access
       const childrenArray = React.Children.toArray(child.props.children);
-      const filteredGrandChildren = childrenArray.filter(grandChild => 
-        React.isValidElement(grandChild) && 
-        grandChild.type.name !== 'Pricing'
-      );
+      const filteredGrandChildren = childrenArray.filter(grandChild => {
+        if (!React.isValidElement(grandChild)) return false;
+        const componentType = grandChild.type as { name?: string };
+        return componentType.name !== 'Pricing';
+      });
       
       return React.cloneElement(child, {
         ...child.props,
