@@ -11,19 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Instagram, Facebook, Globe, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
-const FOLLOWER_RANGES = [
-  { min: 0, max: 10000, label: "0 - 10K" },
-  { min: 10000, max: 50000, label: "10K - 50K" },
-  { min: 50000, max: 100000, label: "50K - 100K" },
-  { min: 100000, max: 500000, label: "100K - 500K" },
-  { min: 500000, max: 1000000, label: "500K - 1M" },
-  { min: 1000000, max: null, label: "1M+" },
-];
+import { Label } from "@/components/ui/label";
 
 const PLATFORMS = [
   { id: "instagram", label: "Instagram", icon: Instagram },
@@ -34,10 +25,11 @@ const PLATFORMS = [
 const Creators = () => {
   const navigate = useNavigate();
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
-  const [followerRange, setFollowerRange] = useState<number[]>([0, 1000000]);
+  const [minFollowers, setMinFollowers] = useState<string>("0");
+  const [maxFollowers, setMaxFollowers] = useState<string>("1000000");
 
   const { data: creators, isLoading } = useQuery({
-    queryKey: ["creators", selectedPlatform, followerRange],
+    queryKey: ["creators", selectedPlatform, minFollowers, maxFollowers],
     queryFn: async () => {
       let query = supabase
         .from("ugc_creators")
@@ -64,11 +56,14 @@ const Creators = () => {
       return data?.filter((creator) => {
         if (!creator.social_media_profiles?.length) return false;
         
+        const min = parseInt(minFollowers) || 0;
+        const max = parseInt(maxFollowers) || Infinity;
+        
         return creator.social_media_profiles.some(
           (profile: any) =>
             (selectedPlatform === "all" || profile.platform === selectedPlatform) &&
-            profile.followers_count >= followerRange[0] &&
-            (followerRange[1] === null || profile.followers_count <= followerRange[1])
+            profile.followers_count >= min &&
+            profile.followers_count <= max
         );
       });
     },
@@ -78,6 +73,16 @@ const Creators = () => {
     const platformConfig = PLATFORMS.find((p) => p.id === platform);
     const Icon = platformConfig?.icon || Globe;
     return <Icon className="h-4 w-4" />;
+  };
+
+  const handleMinFollowersChange = (value: string) => {
+    const numValue = value === "" ? "0" : value.replace(/\D/g, "");
+    setMinFollowers(numValue);
+  };
+
+  const handleMaxFollowersChange = (value: string) => {
+    const numValue = value === "" ? "1000000" : value.replace(/\D/g, "");
+    setMaxFollowers(numValue);
   };
 
   return (
@@ -94,9 +99,9 @@ const Creators = () => {
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div>
-            <label className="text-sm font-medium mb-2 block">
+            <Label className="text-sm font-medium mb-2 block">
               Social Platform
-            </label>
+            </Label>
             <Select
               value={selectedPlatform}
               onValueChange={setSelectedPlatform}
@@ -119,20 +124,28 @@ const Creators = () => {
           </div>
 
           <div className="col-span-2">
-            <label className="text-sm font-medium mb-2 block">
+            <Label className="text-sm font-medium mb-2 block">
               Followers Range
-            </label>
-            <Slider
-              min={0}
-              max={1000000}
-              step={1000}
-              value={followerRange}
-              onValueChange={setFollowerRange}
-              className="mt-4"
-            />
-            <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-              <span>{followerRange[0].toLocaleString()}</span>
-              <span>{followerRange[1].toLocaleString()}</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Min followers"
+                  value={parseInt(minFollowers).toLocaleString()}
+                  onChange={(e) => handleMinFollowersChange(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Max followers"
+                  value={parseInt(maxFollowers).toLocaleString()}
+                  onChange={(e) => handleMaxFollowersChange(e.target.value)}
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
