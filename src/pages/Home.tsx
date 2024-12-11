@@ -3,19 +3,14 @@ import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { StatsCard } from "@/components/home/StatsCard";
 import { DashboardHeader } from "@/components/home/DashboardHeader";
+import { TrialBanner } from "@/components/home/TrialBanner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Package, BarChart3 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { BankTransferPayment } from "@/components/payment/BankTransferPayment";
-import { motion } from "framer-motion";
 
 const Home = () => {
   const session = useSession();
-  const navigate = useNavigate();
 
   // Fetch campaigns data
   const { data: campaignsData } = useQuery({
@@ -129,7 +124,6 @@ const Home = () => {
     enabled: !!session?.user?.id,
   });
 
-  const isAdmin = session?.user?.email === "alperen@tracefluence.com";
   const hasLifetimeAccess = license?.has_lifetime_access;
   const trialDaysLeft = license?.trial_end_date ? Math.ceil((new Date(license.trial_end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
@@ -137,34 +131,11 @@ const Home = () => {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <DashboardHeader />
-
-        {!hasLifetimeAccess && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-primary/20"
-          >
-            <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-              {trialDaysLeft > 0 ? `${trialDaysLeft} Days Left in Trial` : "Trial Period Ended"}
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Get lifetime access to all features of UGC Tracker. 
-              Pay once, use forever!
-            </p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button 
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                >
-                  Get Lifetime License - $50
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <BankTransferPayment />
-              </DialogContent>
-            </Dialog>
-          </motion.div>
-        )}
+        
+        <TrialBanner 
+          trialDaysLeft={trialDaysLeft} 
+          hasLifetimeAccess={hasLifetimeAccess} 
+        />
 
         <div className="grid gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
