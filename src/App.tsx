@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import Settings from "./pages/Settings";
 import Home from "./pages/Home";
 import Creators from "./pages/Creators";
 import NewCreator from "./pages/creators/new";
@@ -62,6 +63,14 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route
+                path="/settings"
+                element={
+                  <AuthWrapper>
+                    <Settings />
+                  </AuthWrapper>
+                }
+              />
               <Route
                 path="/home"
                 element={

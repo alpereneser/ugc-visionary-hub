@@ -82,7 +82,7 @@ export const Header = () => {
                     <span>{session.user.email}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex items-center">
+                  <DropdownMenuItem onClick={() => navigate('/settings')} className="flex items-center">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
