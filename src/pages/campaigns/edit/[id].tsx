@@ -55,11 +55,11 @@ const EditCampaign = () => {
 
       if (error) throw error;
 
-      toast.success("Kampanya başarıyla güncellendi");
+      toast.success("Campaign updated successfully");
       navigate(`/campaigns/${id}`);
     } catch (error) {
       console.error("Error updating campaign:", error);
-      toast.error("Kampanya güncellenirken bir hata oluştu");
+      toast.error("An error occurred while updating the campaign");
     }
   };
 
@@ -80,14 +80,14 @@ const EditCampaign = () => {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Kampanya Düzenle</h1>
+            <h1 className="text-3xl font-bold">Edit Campaign</h1>
           </div>
 
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Kampanya Adı</Label>
+                  <Label htmlFor="name">Campaign Name</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -99,7 +99,7 @@ const EditCampaign = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Açıklama</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -111,7 +111,7 @@ const EditCampaign = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="start_date">Başlangıç Tarihi</Label>
+                    <Label htmlFor="start_date">Start Date</Label>
                     <Input
                       id="start_date"
                       type="date"
@@ -122,7 +122,7 @@ const EditCampaign = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="end_date">Bitiş Tarihi</Label>
+                    <Label htmlFor="end_date">End Date</Label>
                     <Input
                       id="end_date"
                       type="date"
@@ -135,7 +135,7 @@ const EditCampaign = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Durum</Label>
+                  <Label htmlFor="status">Status</Label>
                   <select
                     id="status"
                     className="w-full border border-input bg-background px-3 py-2 rounded-md"
@@ -144,10 +144,10 @@ const EditCampaign = () => {
                       setFormData({ ...formData, status: e.target.value })
                     }
                   >
-                    <option value="draft">Taslak</option>
-                    <option value="active">Aktif</option>
-                    <option value="completed">Tamamlandı</option>
-                    <option value="cancelled">İptal Edildi</option>
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
 
@@ -157,9 +157,9 @@ const EditCampaign = () => {
                     variant="outline"
                     onClick={() => navigate(-1)}
                   >
-                    İptal
+                    Cancel
                   </Button>
-                  <Button type="submit">Kaydet</Button>
+                  <Button type="submit">Save</Button>
                 </div>
               </form>
             </CardContent>

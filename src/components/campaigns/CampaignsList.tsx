@@ -87,7 +87,7 @@ export const CampaignsList = () => {
     console.error("Query error:", error);
     return (
       <div className="text-red-500 text-center min-h-[200px] flex items-center justify-center">
-        Kampanyalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.
+        An error occurred while loading campaigns. Please try again.
       </div>
     );
   }
@@ -95,33 +95,33 @@ export const CampaignsList = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Kampanyalar</h1>
+        <h1 className="text-2xl font-bold">Campaigns</h1>
         <div className="flex gap-4 items-center">
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value)}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Duruma göre filtrele" />
+              <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tüm Kampanyalar</SelectItem>
-              <SelectItem value="active">Aktif</SelectItem>
-              <SelectItem value="draft">Taslak</SelectItem>
-              <SelectItem value="completed">Tamamlandı</SelectItem>
-              <SelectItem value="upcoming">Yaklaşan</SelectItem>
+              <SelectItem value="all">All Campaigns</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="upcoming">Upcoming</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => navigate("/campaigns/new")}>
             <Plus className="w-4 h-4 mr-2" />
-            Yeni Kampanya
+            New Campaign
           </Button>
         </div>
       </div>
 
       {!campaigns || campaigns.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          Henüz kampanya eklenmemiş.
+          No campaigns added yet.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -144,7 +144,7 @@ export const CampaignsList = () => {
                     <span>
                       {campaign.start_date
                         ? format(new Date(campaign.start_date), "dd MMM yyyy")
-                        : "Başlangıç tarihi belirtilmemiş"}
+                        : "Start date not set"}
                     </span>
                   </div>
                   <div
@@ -158,13 +158,7 @@ export const CampaignsList = () => {
                         : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {getCampaignStatus(campaign) === "active"
-                      ? "Aktif"
-                      : getCampaignStatus(campaign) === "completed"
-                      ? "Tamamlandı"
-                      : getCampaignStatus(campaign) === "upcoming"
-                      ? "Yaklaşan"
-                      : "Taslak"}
+                    {getCampaignStatus(campaign)}
                   </div>
                 </div>
               </CardContent>
