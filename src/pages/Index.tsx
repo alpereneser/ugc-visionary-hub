@@ -5,8 +5,8 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 
 const Index = () => {
   return (
-    <MainLayout showHeader={false}>
-      <div className="pt-16">
+    <MainLayout showHeader={true}>
+      <div>
         <Hero />
         <Features />
         <Pricing />
