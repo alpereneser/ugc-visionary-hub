@@ -64,10 +64,17 @@ export const Pricing = () => {
 
       if (response.error) throw response.error;
 
-      toast.success("Ödeme işlemi başlatıldı");
+      // Check if the response contains a payment URL
+      if (response.data?.paymentUrl) {
+        toast.success("Redirecting to payment page...");
+        window.location.href = response.data.paymentUrl;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+      
       refetch(); // Refresh license data after payment
     } catch (error) {
-      toast.error("Ödeme işlemi başlatılırken bir hata oluştu");
+      toast.error("Error initiating payment process");
       console.error(error);
     } finally {
       setIsLoading(false);
