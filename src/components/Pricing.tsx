@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,18 +11,41 @@ export const Pricing = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: license } = useQuery({
+  const { data: license, refetch } = useQuery({
     queryKey: ["user-license", session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
+      
+      // First try to get existing license
       const { data, error } = await supabase
         .from("user_licenses")
         .select("*")
-        .eq("user_id", session.user.id)
-        .single();
+        .eq("user_id", session.user.id);
+
+      // If no license exists, create one
+      if ((!data || data.length === 0) && !error) {
+        const { data: newLicense, error: createError } = await supabase
+          .from("user_licenses")
+          .insert([
+            { 
+              user_id: session.user.id,
+              trial_start_date: new Date().toISOString(),
+              trial_end_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 1 day trial
+            }
+          ])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Error creating license:", createError);
+          throw createError;
+        }
+
+        return newLicense;
+      }
 
       if (error) throw error;
-      return data;
+      return data[0]; // Return the first license if multiple exist
     },
     enabled: !!session?.user?.id,
   });
@@ -42,9 +64,11 @@ export const Pricing = () => {
 
       if (response.error) throw response.error;
 
-      toast.success("Ödeme işlemi başlatıldı");
+      toast.success("Payment process initiated");
+      refetch(); // Refresh license data after payment
     } catch (error) {
-      toast.error("Ödeme işlemi başlatılırken bir hata oluştu");
+      toast.error("Error initiating payment process");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +101,7 @@ export const Pricing = () => {
               ? "Get Lifetime Access"
               : "Trial Ended - Upgrade Now"}
           </Button>
-          {isTrialActive && (
+          {isTrialActive && license && (
             <p className="mt-4 text-sm text-muted-foreground">
               Trial ends in{" "}
               {Math.ceil(
