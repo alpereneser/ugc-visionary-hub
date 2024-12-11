@@ -3,7 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export const CostBreakdown = ({ selectedProducts, selectedCreators, expenses }) => {
+interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  additional_expenses: any[];
+  campaign_creators: any[];
+  campaign_products: any[];
+}
+
+interface CostBreakdownProps {
+  campaign: Campaign;
+}
+
+export const CostBreakdown = ({ campaign }: CostBreakdownProps) => {
   const { data: products } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -16,14 +32,16 @@ export const CostBreakdown = ({ selectedProducts, selectedCreators, expenses }) 
   });
 
   const calculateProductsCost = () => {
-    return selectedProducts.reduce((acc, productId) => {
-      const product = products?.find((p) => p.id === productId);
-      return acc + (product?.cost_price || 0) * selectedCreators.length;
+    return campaign.campaign_products.reduce((acc, cp) => {
+      const product = products?.find((p) => p.id === cp.product_id);
+      return acc + (product?.cost_price || 0) * campaign.campaign_creators.length;
     }, 0);
   };
 
   const calculateTotalExpenses = () => {
-    return expenses.reduce((acc, expense) => acc + Number(expense.amount || 0), 0);
+    return (campaign.additional_expenses || []).reduce((acc, expense: any) => 
+      acc + Number(expense.amount || 0), 0
+    );
   };
 
   const calculateTotalCost = () => {
@@ -40,12 +58,12 @@ export const CostBreakdown = ({ selectedProducts, selectedCreators, expenses }) 
             <span>${calculateProductsCost().toFixed(2)}</span>
           </div>
           
-          {expenses.length > 0 && (
+          {campaign.additional_expenses?.length > 0 && (
             <>
               <Separator className="my-2" />
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Additional Expenses:</span>
-                {expenses.map((expense, index) => (
+                {campaign.additional_expenses.map((expense: any, index: number) => (
                   <div key={index} className="flex justify-between pl-4">
                     <span>{expense.name || "Unnamed expense"}</span>
                     <span>${Number(expense.amount || 0).toFixed(2)}</span>

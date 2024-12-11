@@ -4,6 +4,7 @@ import { RecentCreators } from "@/components/home/RecentCreators";
 import { StatsCard } from "@/components/home/StatsCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Users, Package, BarChart3 } from "lucide-react";
 
 const Home = () => {
   const { data: creators } = useQuery({
@@ -31,18 +32,24 @@ const Home = () => {
               value="12"
               description="+2.5% from last month"
               type="increase"
+              icon={BarChart3}
+              link="/campaigns"
             />
             <StatsCard
               title="Total Creators"
               value="48"
               description="+12% from last month"
               type="increase"
+              icon={Users}
+              link="/creators"
             />
             <StatsCard
               title="Products Tracked"
               value="156"
               description="-4% from last month"
               type="decrease"
+              icon={Package}
+              link="/products"
             />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
