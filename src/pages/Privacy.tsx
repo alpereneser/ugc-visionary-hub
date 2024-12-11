@@ -4,43 +4,42 @@ const Privacy = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 prose prose-slate max-w-4xl">
-        <h1>Gizlilik Politikası</h1>
+        <h1>Privacy Policy</h1>
         
-        <p>Son güncellenme: {new Date().toLocaleDateString('tr-TR')}</p>
+        <p>Last updated: {new Date().toLocaleDateString('en-US')}</p>
         
-        <h2>1. Bilgi Toplama</h2>
+        <h2>1. Information Collection</h2>
         <p>
-          Tracefluence olarak, hizmetlerimizi kullanırken sizden bazı kişisel bilgiler topluyoruz. 
-          Bu bilgiler şunları içerebilir:
+          At Tracefluence, we collect certain personal information while you use our services. 
+          This information may include:
         </p>
         <ul>
-          <li>Ad ve soyadınız</li>
-          <li>E-posta adresiniz</li>
-          <li>Şirket bilgileriniz</li>
-          <li>Ödeme bilgileriniz</li>
+          <li>Your name and surname</li>
+          <li>Your email address</li>
+          <li>Company information</li>
+          <li>Payment information</li>
         </ul>
 
-        <h2>2. Bilgilerin Kullanımı</h2>
+        <h2>2. Use of Information</h2>
         <p>
-          Topladığımız bilgileri aşağıdaki amaçlar için kullanıyoruz:
+          We use the collected information for the following purposes:
         </p>
         <ul>
-          <li>Hizmetlerimizi sağlamak ve iyileştirmek</li>
-          <li>Hesabınızı yönetmek</li>
-          <li>Size destek sağlamak</li>
-          <li>Yasal yükümlülüklerimizi yerine getirmek</li>
+          <li>To provide and improve our services</li>
+          <li>To manage your account</li>
+          <li>To provide support</li>
+          <li>To fulfill our legal obligations</li>
         </ul>
 
-        <h2>3. Bilgi Güvenliği</h2>
+        <h2>3. Data Security</h2>
         <p>
-          Kişisel verilerinizin güvenliğini sağlamak için endüstri standardı güvenlik 
-          önlemleri kullanıyoruz. Verileriniz şifrelenerek saklanır ve düzenli olarak 
-          yedeklenir.
+          We use industry-standard security measures to protect your personal data. 
+          Your data is encrypted and regularly backed up.
         </p>
 
-        <h2>4. İletişim</h2>
+        <h2>4. Contact</h2>
         <p>
-          Bu gizlilik politikası hakkında sorularınız varsa, lütfen bizimle iletişime geçin:
+          If you have any questions about this privacy policy, please contact us:
           <br />
           Email: privacy@tracefluence.com
         </p>

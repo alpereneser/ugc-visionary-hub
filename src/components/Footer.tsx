@@ -42,21 +42,21 @@ export const Footer = () => {
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
               <FileText className="w-4 h-4" />
-              Gizlilik Politikası
+              Privacy Policy
             </Link>
             <Link 
               to="/terms" 
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
               <FileText className="w-4 h-4" />
-              Kullanım Koşulları
+              Terms of Service
             </Link>
             <Link 
               to="/contact" 
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
               <Mail className="w-4 h-4" />
-              Bize Ulaşın
+              Contact Us
             </Link>
           </div>
           

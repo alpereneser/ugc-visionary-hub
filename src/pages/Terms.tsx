@@ -4,44 +4,44 @@ const Terms = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-12 prose prose-slate max-w-4xl">
-        <h1>Kullanım Koşulları</h1>
+        <h1>Terms of Service</h1>
         
-        <p>Son güncellenme: {new Date().toLocaleDateString('tr-TR')}</p>
+        <p>Last updated: {new Date().toLocaleDateString('en-US')}</p>
 
-        <h2>1. Hizmet Kullanımı</h2>
+        <h2>1. Service Usage</h2>
         <p>
-          Tracefluence platformunu kullanarak, bu kullanım koşullarını kabul etmiş 
-          olursunuz. Platformu yalnızca yasal amaçlar için ve bu koşullara uygun 
-          olarak kullanmayı kabul edersiniz.
+          By using the Tracefluence platform, you agree to these terms of service. 
+          You agree to use the platform only for legal purposes and in accordance 
+          with these terms.
         </p>
 
-        <h2>2. Hesap Güvenliği</h2>
+        <h2>2. Account Security</h2>
         <p>
-          Hesabınızın güvenliğinden siz sorumlusunuz. Hesap bilgilerinizi güvende 
-          tutmalı ve başkalarıyla paylaşmamalısınız.
+          You are responsible for maintaining the security of your account. 
+          Keep your account information secure and do not share it with others.
         </p>
 
-        <h2>3. Ödeme ve Abonelikler</h2>
+        <h2>3. Payments and Subscriptions</h2>
         <p>
-          Ücretli hizmetlerimiz için yapılan ödemeler iade edilmez. Abonelikler 
-          otomatik olarak yenilenir ve istediğiniz zaman iptal edilebilir.
+          Payments for our paid services are non-refundable. Subscriptions 
+          automatically renew and can be cancelled at any time.
         </p>
 
-        <h2>4. Fikri Mülkiyet</h2>
+        <h2>4. Intellectual Property</h2>
         <p>
-          Platform üzerindeki tüm içerik ve materyaller Tracefluence'in mülkiyetindedir 
-          ve telif hakkı yasaları ile korunmaktadır.
+          All content and materials on the platform are owned by Tracefluence 
+          and are protected by copyright laws.
         </p>
 
-        <h2>5. Sorumluluk Reddi</h2>
+        <h2>5. Disclaimer</h2>
         <p>
-          Hizmetlerimiz "olduğu gibi" sunulmaktadır. Platform kullanımından 
-          doğabilecek herhangi bir zarar için sorumluluk kabul etmemekteyiz.
+          Our services are provided "as is". We do not accept liability for 
+          any damages that may arise from using our platform.
         </p>
 
-        <h2>6. İletişim</h2>
+        <h2>6. Contact</h2>
         <p>
-          Bu kullanım koşulları hakkında sorularınız varsa, lütfen bizimle iletişime geçin:
+          If you have any questions about these terms, please contact us:
           <br />
           Email: legal@tracefluence.com
         </p>
