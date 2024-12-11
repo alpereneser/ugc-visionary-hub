@@ -37,18 +37,23 @@ serve(async (req) => {
     const quote = await createWiseQuote(amount);
     console.log('Wise quote created:', quote);
 
-    // Create payment link
+    // Create payment link with more detailed error handling
     console.log('Creating Wise payment link');
-    const paymentUrl = await createWisePaymentLink(quote.id, userId);
-    console.log('Wise payment link created:', paymentUrl);
+    try {
+      const paymentUrl = await createWisePaymentLink(quote.id, userId);
+      console.log('Wise payment link created:', paymentUrl);
 
-    return new Response(
-      JSON.stringify({ paymentUrl }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+      return new Response(
+        JSON.stringify({ paymentUrl }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    } catch (error) {
+      console.error('Payment link creation error:', error);
+      throw error;
+    }
   } catch (error) {
     console.error('Error in handle-wise function:', error);
     return new Response(

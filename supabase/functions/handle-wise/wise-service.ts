@@ -29,22 +29,30 @@ export async function createWiseQuote(amount: number): Promise<any> {
 
 export async function createWisePaymentLink(quoteId: string, userId: string): Promise<string> {
   console.log('Creating Wise payment link for quote:', quoteId);
-  const response = await fetch('https://api.wise.com/v3/payment-urls', {
+  
+  // Wise API v3 için güncellenmiş endpoint ve request body
+  const response = await fetch('https://api.wise.com/v3/profiles/' + Deno.env.get('WISE_PROFILE_ID') + '/payment-urls', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${Deno.env.get('WISE_API_KEY')}`,
+      'Authorization': `Bearer ${Deno.env.get('WISE_API_KEY')}',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      quoteUuid: quoteId,
-      redirectUrl: `${Deno.env.get('PUBLIC_SITE_URL')}/home`,
-      customerEmail: userId,
+      quote: quoteId,
+      redirectUrl: `${Deno.env.get('PUBLIC_SITE_URL')}/payment-success`,
+      sourceUrl: `${Deno.env.get('PUBLIC_SITE_URL')}`,
+      customerEmail: userId
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Wise payment link error:', errorText);
+    console.error('Wise payment link error:', errorText, 'Status:', response.status);
+    console.error('Request details:', {
+      quoteId,
+      profileId: Deno.env.get('WISE_PROFILE_ID'),
+      publicSiteUrl: Deno.env.get('PUBLIC_SITE_URL')
+    });
     throw new Error(`Failed to create Wise payment link: ${errorText}`);
   }
 
