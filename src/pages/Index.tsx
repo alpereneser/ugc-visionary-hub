@@ -6,7 +6,7 @@ import { HeroSlider } from "@/components/HeroSlider";
 
 const Index = () => {
   return (
-    <MainLayout showHeader={true}>
+    <MainLayout showHeader={false}>
       <div>
         <Hero />
         <HeroSlider />
