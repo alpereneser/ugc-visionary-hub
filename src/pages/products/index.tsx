@@ -1,14 +1,11 @@
-import { Header } from "@/components/Header";
 import { ProductsList } from "@/components/products/ProductsList";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const ProductsPage = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-16">
-        <ProductsList />
-      </main>
-    </div>
+    <MainLayout>
+      <ProductsList />
+    </MainLayout>
   );
 };
 

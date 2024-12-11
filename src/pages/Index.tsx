@@ -1,20 +1,17 @@
 import { Hero } from "@/components/Hero";
 import { Features } from "@/components/Features";
 import { Pricing } from "@/components/Pricing";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Header />
+    <MainLayout showHeader={false}>
       <div className="pt-16">
         <Hero />
         <Features />
         <Pricing />
-        <Footer />
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

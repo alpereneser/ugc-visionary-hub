@@ -9,6 +9,7 @@ import * as z from "zod";
 import { ArrowRight } from "lucide-react";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -64,76 +65,78 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
-      <div className="flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-12">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </p>
+    <MainLayout showHeader={false}>
+      <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+        <div className="flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-12">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter your password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center justify-between">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+
+                <Button type="submit" className="w-full">
+                  Sign in <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </form>
+            </Form>
+          </div>
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex items-center justify-between">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-
-              <Button type="submit" className="w-full">
-                Sign in <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
-          </Form>
+        <div className="hidden md:block">
+          <img
+            src={randomImage}
+            alt="Login"
+            className="h-full w-full object-cover"
+          />
         </div>
       </div>
-
-      <div className="hidden md:block">
-        <img
-          src={randomImage}
-          alt="Login"
-          className="h-full w-full object-cover"
-        />
-      </div>
-    </div>
+    </MainLayout>
   );
 };
 

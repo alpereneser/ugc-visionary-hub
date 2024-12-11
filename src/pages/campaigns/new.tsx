@@ -1,16 +1,15 @@
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CampaignForm } from "@/components/campaigns/CampaignForm";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const NewCampaign = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -21,8 +20,8 @@ const NewCampaign = () => {
 
           <CampaignForm />
         </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
