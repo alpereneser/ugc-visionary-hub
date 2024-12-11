@@ -36,6 +36,10 @@ export default {
           DEFAULT: "#F0F7FF",
           foreground: "#0066FF",
         },
+        popover: {
+          DEFAULT: "white",
+          foreground: "hsl(var(--popover-foreground))",
+        },
       },
       keyframes: {
         "card-hover": {
