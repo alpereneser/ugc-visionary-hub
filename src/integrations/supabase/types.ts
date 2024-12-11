@@ -321,6 +321,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_licenses: {
+        Row: {
+          created_at: string | null
+          has_lifetime_access: boolean | null
+          id: string
+          payment_status: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          has_lifetime_access?: boolean | null
+          id?: string
+          payment_status?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          has_lifetime_access?: boolean | null
+          id?: string
+          payment_status?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

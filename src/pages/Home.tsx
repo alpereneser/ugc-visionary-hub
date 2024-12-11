@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/home/StatsCard";
 import { RecentCreators } from "@/components/home/RecentCreators";
 import { ActiveCampaigns } from "@/components/home/ActiveCampaigns";
+import { Pricing } from "@/components/Pricing";
 
 const Home = () => {
   const session = useSession();
@@ -162,6 +163,9 @@ const Home = () => {
             <ActiveCampaigns campaigns={activeCampaigns} />
           </div>
         </div>
+
+        {/* Add Pricing section */}
+        <Pricing />
       </main>
     </div>
   );

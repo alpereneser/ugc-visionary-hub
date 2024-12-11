@@ -1,4 +1,54 @@
+import { useEffect, useState } from "react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
+import { Button } from "./ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
 export const Pricing = () => {
+  const session = useSession();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { data: license } = useQuery({
+    queryKey: ["user-license", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data, error } = await supabase
+        .from("user_licenses")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const handlePurchase = async () => {
+    if (!session) {
+      navigate("/login");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // PayTR integration will go here
+      // For now, we'll just show a toast
+      toast.info("Payment integration coming soon!");
+    } catch (error) {
+      toast.error("Failed to process payment");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isTrialActive = license && new Date(license.trial_end_date) > new Date();
+  const hasLifetimeAccess = license?.has_lifetime_access;
+
   return (
     <div className="py-20 px-4 bg-accent">
       <div className="max-w-4xl mx-auto text-center">
@@ -12,9 +62,27 @@ export const Pricing = () => {
             <li>✓ Future Planning Tools</li>
             <li>✓ Free Lifetime Updates</li>
           </ul>
-          <button className="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary/90 transition-colors w-full">
-            Get Lifetime Access
-          </button>
+          <Button
+            onClick={handlePurchase}
+            disabled={isLoading || hasLifetimeAccess}
+            className="w-full"
+          >
+            {hasLifetimeAccess
+              ? "You have lifetime access"
+              : isTrialActive
+              ? "Get Lifetime Access"
+              : "Trial Ended - Upgrade Now"}
+          </Button>
+          {isTrialActive && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Trial ends in{" "}
+              {Math.ceil(
+                (new Date(license.trial_end_date).getTime() - new Date().getTime()) /
+                  (1000 * 60 * 60 * 24)
+              )}{" "}
+              days
+            </p>
+          )}
         </div>
       </div>
     </div>
