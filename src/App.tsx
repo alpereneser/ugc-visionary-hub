@@ -19,36 +19,132 @@ import Campaigns from "./pages/campaigns";
 import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
 import { supabase } from "./integrations/supabase/client";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SessionContextProvider supabaseClient={supabase}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/creators" element={<Creators />} />
-            <Route path="/creators/new" element={<NewCreator />} />
-            <Route path="/creators/:id" element={<CreatorDetail />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/new" element={<NewProduct />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/campaigns" element={<Campaigns />} />
-            <Route path="/campaigns/new" element={<NewCampaign />} />
-            <Route path="/campaigns/:id" element={<CampaignDetail />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </SessionContextProvider>
-  </QueryClientProvider>
-);
+const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const handleAuthStateChange = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = '/login';
+    }
+  };
+
+  useEffect(() => {
+    handleAuthStateChange();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = '/login';
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return <>{children}</>;
+};
+
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route
+                path="/home"
+                element={
+                  <AuthWrapper>
+                    <Home />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/creators"
+                element={
+                  <AuthWrapper>
+                    <Creators />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/creators/new"
+                element={
+                  <AuthWrapper>
+                    <NewCreator />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/creators/:id"
+                element={
+                  <AuthWrapper>
+                    <CreatorDetail />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/products"
+                element={
+                  <AuthWrapper>
+                    <Products />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/products/new"
+                element={
+                  <AuthWrapper>
+                    <NewProduct />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/products/:id"
+                element={
+                  <AuthWrapper>
+                    <ProductDetail />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/campaigns"
+                element={
+                  <AuthWrapper>
+                    <Campaigns />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/campaigns/new"
+                element={
+                  <AuthWrapper>
+                    <NewCampaign />
+                  </AuthWrapper>
+                }
+              />
+              <Route
+                path="/campaigns/:id"
+                element={
+                  <AuthWrapper>
+                    <CampaignDetail />
+                  </AuthWrapper>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
