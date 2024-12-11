@@ -31,6 +31,14 @@ export const Header = () => {
     navigate("/login");
   };
 
+  const handleLogoClick = () => {
+    if (session) {
+      navigate('/home');
+    } else {
+      navigate('/');
+    }
+  };
+
   const getInitials = (name: string) => {
     if (!name) return "T";
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -58,12 +66,15 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2">
+          <div 
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">T</span>
             </div>
             <span className="font-['Montserrat'] font-bold text-xl">TRACEFLUENCE</span>
-          </Link>
+          </div>
 
           {session && (
             <NavigationMenu className="hidden md:flex">
