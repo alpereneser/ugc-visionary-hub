@@ -23,7 +23,9 @@ export const CampaignsList = () => {
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["campaigns", statusFilter],
     queryFn: async () => {
-      console.log("Fetching campaigns...");
+      console.log("Fetching campaigns with status filter:", statusFilter);
+      console.log("Current user ID:", session?.user?.id);
+
       let query = supabase
         .from("campaigns")
         .select(`
@@ -117,13 +119,13 @@ export const CampaignsList = () => {
         </div>
       </div>
 
-      {campaigns?.length === 0 ? (
+      {!campaigns || campaigns.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           Henüz kampanya eklenmemiş.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {campaigns?.map((campaign) => (
+          {campaigns.map((campaign) => (
             <Card
               key={campaign.id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
