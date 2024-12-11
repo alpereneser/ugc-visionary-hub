@@ -53,7 +53,6 @@ const Home = () => {
     enabled: !!session?.user?.id,
   });
 
-  // Fetch creators data
   const { data: creatorsData } = useQuery({
     queryKey: ["dashboard-creators", session?.user?.id],
     queryFn: async () => {
@@ -152,40 +151,6 @@ const Home = () => {
               Get lifetime access to all features of UGC Tracker. 
               Pay once, use forever!
             </p>
-            <ul className="space-y-2 mb-4">
-              <motion.li 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-2 text-muted-foreground"
-              >
-                ✓ Unlimited campaign tracking
-              </motion.li>
-              <motion.li 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-2 text-muted-foreground"
-              >
-                ✓ Detailed performance analytics
-              </motion.li>
-              <motion.li 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-2 text-muted-foreground"
-              >
-                ✓ Advanced planning tools
-              </motion.li>
-              <motion.li 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex items-center gap-2 text-muted-foreground"
-              >
-                ✓ Free lifetime updates
-              </motion.li>
-            </ul>
             <Button 
               onClick={() => navigate("/home")} 
               className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
