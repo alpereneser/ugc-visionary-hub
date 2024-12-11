@@ -27,23 +27,15 @@ export const Header = () => {
     
     setIsLoggingOut(true);
     try {
-      // First, try to get the current session
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      if (currentSession) {
-        // If we have a session, try to sign out properly
-        await supabase.auth.signOut();
-      }
-      
-      // Clear any local storage data
+      // Clear any local storage data first
       localStorage.clear();
       
-      // Force clear the Supabase session
-      await supabase.auth.clearSession();
+      // Attempt to sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
       // Always navigate to login page
       navigate("/login", { replace: true });
-      
       toast.success("Successfully logged out");
     } catch (error: any) {
       console.error("Logout failed:", error);
