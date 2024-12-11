@@ -11,8 +11,9 @@ export const ProductsList = () => {
   const session = useSession();
 
   const { data: products, isLoading, error } = useQuery({
-    queryKey: ["products", session?.user?.id],
+    queryKey: ["products"],
     queryFn: async () => {
+      console.log("Fetching products...");
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -27,7 +28,12 @@ export const ProductsList = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+
+      console.log("Products fetched:", data);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -42,6 +48,7 @@ export const ProductsList = () => {
   }
 
   if (error) {
+    console.error("Query error:", error);
     return (
       <div className="text-red-500 text-center min-h-[200px] flex items-center justify-center">
         Error loading products. Please try again.
