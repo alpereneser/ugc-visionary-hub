@@ -9,6 +9,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Pricing } from "@/components/Pricing";
+import { motion } from "framer-motion";
 
 const Home = () => {
   const session = useSession();
@@ -130,6 +131,7 @@ const Home = () => {
   const isAdmin = session?.user?.email === "alperen@tracefluence.com";
   const hasLifetimeAccess = license?.has_lifetime_access;
   const shouldShowPricing = !isAdmin && !hasLifetimeAccess;
+  const trialDaysLeft = license?.trial_end_date ? Math.ceil((new Date(license.trial_end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
     <MainLayout>
@@ -147,6 +149,63 @@ const Home = () => {
             </Button>
           )}
         </div>
+
+        {!hasLifetimeAccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-primary/20"
+          >
+            <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              {trialDaysLeft > 0 ? `${trialDaysLeft} Gün Deneme Süreniz Kaldı` : "Deneme Süreniz Bitti"}
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              UGC Tracker'ın tüm özelliklerinden yararlanmak için Lifetime License satın alın. 
+              Sadece bir kere ödeme yapın, ömür boyu kullanın!
+            </p>
+            <ul className="space-y-2 mb-4">
+              <motion.li 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="flex items-center gap-2 text-muted-foreground"
+              >
+                ✓ Sınırsız kampanya takibi
+              </motion.li>
+              <motion.li 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-2 text-muted-foreground"
+              >
+                ✓ Detaylı performans analizleri
+              </motion.li>
+              <motion.li 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-2 text-muted-foreground"
+              >
+                ✓ Gelişmiş planlama araçları
+              </motion.li>
+              <motion.li 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex items-center gap-2 text-muted-foreground"
+              >
+                ✓ Ücretsiz ömür boyu güncellemeler
+              </motion.li>
+            </ul>
+            <Button 
+              onClick={() => navigate("/home")} 
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+            >
+              Lifetime License Satın Al - $50
+            </Button>
+          </motion.div>
+        )}
+
         <div className="grid gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatsCard
