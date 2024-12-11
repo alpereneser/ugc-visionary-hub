@@ -56,15 +56,15 @@ export const Pricing = () => {
   return (
     <div className="py-20 px-4 bg-accent">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-12">Basit Fiyatlandırma</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-12">Simple Pricing</h2>
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <div className="text-5xl font-bold text-primary mb-4">₺50</div>
-          <div className="text-xl font-semibold mb-6">Ömür Boyu Erişim</div>
+          <div className="text-5xl font-bold text-primary mb-4">$50</div>
+          <div className="text-xl font-semibold mb-6">Lifetime Access</div>
           <ul className="text-secondary space-y-4 mb-8">
-            <li>✓ Sınırsız Kampanya Takibi</li>
-            <li>✓ Performans Analizleri</li>
-            <li>✓ Gelecek Planlama Araçları</li>
-            <li>✓ Ücretsiz Ömür Boyu Güncellemeler</li>
+            <li>✓ Unlimited Campaign Tracking</li>
+            <li>✓ Performance Analytics</li>
+            <li>✓ Future Planning Tools</li>
+            <li>✓ Free Lifetime Updates</li>
           </ul>
           <Button
             onClick={handlePurchase}
@@ -72,19 +72,19 @@ export const Pricing = () => {
             className="w-full"
           >
             {hasLifetimeAccess
-              ? "Ömür boyu erişiminiz var"
+              ? "You have lifetime access"
               : isTrialActive
-              ? "Ömür Boyu Erişim Al"
-              : "Deneme Süresi Bitti - Şimdi Yükselt"}
+              ? "Get Lifetime Access"
+              : "Trial Ended - Upgrade Now"}
           </Button>
           {isTrialActive && (
             <p className="mt-4 text-sm text-muted-foreground">
-              Deneme süresi{" "}
+              Trial ends in{" "}
               {Math.ceil(
                 (new Date(license.trial_end_date).getTime() - new Date().getTime()) /
                   (1000 * 60 * 60 * 24)
               )}{" "}
-              gün sonra bitiyor
+              days
             </p>
           )}
         </div>
