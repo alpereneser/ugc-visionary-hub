@@ -1,4 +1,4 @@
-import { Layout, LogOut, Menu, MessageSquare, Settings, User, X } from "lucide-react";
+import { Layout, LogOut, Menu, MessageSquare, Settings, User, X, Users, Package, Flag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import {
@@ -54,9 +54,9 @@ export const Header = () => {
 
   const navigationItems = [
     { path: '/home', label: 'Dashboard', icon: Layout },
-    { path: '/creators', label: 'Creators' },
-    { path: '/products', label: 'Products' },
-    { path: '/campaigns', label: 'Campaigns' },
+    { path: '/creators', label: 'Creators', icon: Users },
+    { path: '/products', label: 'Products', icon: Package },
+    { path: '/campaigns', label: 'Campaigns', icon: Flag },
   ];
 
   useEffect(() => {
