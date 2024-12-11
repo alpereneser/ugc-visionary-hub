@@ -43,6 +43,9 @@ serve(async (req) => {
     // PayTR requires amount in cents (1 USD = 100 cents)
     const amount = 5000 // $50.00
 
+    // Get user's IP address from request headers
+    const userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+
     // Prepare payment data
     const paytrData = {
       merchant_id: Deno.env.get('PAYTR_MERCHANT_ID'),
@@ -54,8 +57,11 @@ serve(async (req) => {
       merchant_ok_url: `${req.headers.get('origin')}/home`,
       merchant_fail_url: `${req.headers.get('origin')}/home`,
       user_basket: JSON.stringify([["Lifetime Access", "1", amount]]),
+      user_ip: userIp,
       debug_on: 1,
-      test_mode: 1
+      test_mode: 1,
+      no_installment: 0,
+      max_installment: 0
     }
 
     // Generate hash string
@@ -67,6 +73,8 @@ serve(async (req) => {
 
     // Add token to payment data
     paytrData.paytr_token = hashHex
+
+    console.log('Sending payment data to PayTR:', paytrData)
 
     // Make request to PayTR API
     const paytrResponse = await fetch('https://www.paytr.com/odeme/api/get-token', {
