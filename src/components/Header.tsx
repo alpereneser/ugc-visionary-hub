@@ -18,20 +18,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
 
 export const Header = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState<string>("");
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login");
   };
 
-  const getInitials = (email: string) => {
-    return email ? email.charAt(0).toUpperCase() : "U";
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!error && data) {
+          setFullName(data.full_name || "");
+        }
+      }
+    };
+
+    loadProfile();
+  }, [session, supabase]);
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b">
@@ -72,14 +93,14 @@ export const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback>{getInitials(session.user.email || '')}</AvatarFallback>
+                      <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuItem className="flex items-center">
                     <User className="mr-2 h-4 w-4" />
-                    <span>{session.user.email}</span>
+                    <span>{fullName || session.user.email}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/settings')} className="flex items-center">
