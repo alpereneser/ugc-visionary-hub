@@ -11,12 +11,29 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const BankTransferPayment = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+      
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Please upload a PDF, PNG, or JPG file');
+        return;
+      }
+      
+      setReceiptFile(file);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!session?.user?.id) {
@@ -25,16 +42,31 @@ export const BankTransferPayment = () => {
       return;
     }
 
+    if (!receiptFile) {
+      toast.error("Please upload your payment receipt");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Create a payment receipt record
+      // Upload file to storage
+      const fileExt = receiptFile.name.split('.').pop();
+      const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('payment_receipts')
+        .upload(filePath, receiptFile);
+
+      if (uploadError) throw uploadError;
+
+      // Create payment receipt record
       const { data: receipt, error: receiptError } = await supabase
         .from("payment_receipts")
         .insert({
           user_id: session.user.id,
           profile_id: session.user.id,
           amount: 50,
-          file_path: "pending",
+          file_path: filePath,
           status: "pending"
         })
         .select()
@@ -72,9 +104,20 @@ export const BankTransferPayment = () => {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="receipt">Ödeme ekran görüntüsü ya da dekontunu yükleyiniz</Label>
+          <Input
+            id="receipt"
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg"
+            onChange={handleFileChange}
+            className="cursor-pointer"
+          />
+        </div>
+
         <Button
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isLoading || !receiptFile}
           className="w-full"
         >
           {isLoading ? "Sending..." : "Send for License Approval"}
