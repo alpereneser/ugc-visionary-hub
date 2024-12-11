@@ -1,15 +1,13 @@
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -18,65 +16,77 @@ const EditProduct = () => {
     name: "",
     description: "",
     sku: "",
+    price: "",
     url: "",
-    retail_price: "",
-    cost_price: "",
   });
 
-  const { isLoading } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
-      const { data: product, error } = await supabase
+      const { data, error } = await supabase
         .from("products")
         .select("*")
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      
+
       setFormData({
-        name: product.name,
-        description: product.description || "",
-        sku: product.sku || "",
-        url: product.url || "",
-        retail_price: product.retail_price?.toString() || "",
-        cost_price: product.cost_price?.toString() || "",
+        name: data.name || "",
+        description: data.description || "",
+        sku: data.sku || "",
+        price: data.price?.toString() || "",
+        url: data.url || "",
       });
-      
-      return product;
+
+      return data;
     },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       const { error } = await supabase
         .from("products")
         .update({
-          ...formData,
-          retail_price: formData.retail_price ? Number(formData.retail_price) : null,
-          cost_price: formData.cost_price ? Number(formData.cost_price) : null,
+          name: formData.name,
+          description: formData.description,
+          sku: formData.sku,
+          price: parseFloat(formData.price) || 0,
+          url: formData.url,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", id);
 
       if (error) throw error;
 
-      toast.success("Ürün başarıyla güncellendi");
+      toast.success("Product updated successfully");
       navigate(`/products/${id}`);
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("Ürün güncellenirken bir hata oluştu");
+      toast.error("Failed to update product");
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          Loading...
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <Button
@@ -86,101 +96,91 @@ const EditProduct = () => {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Ürün Düzenle</h1>
+            <h1 className="text-2xl font-bold">Edit Product</h1>
           </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Ürün Adı</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Product Name
+              </label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Açıklama</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                  />
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="description" className="text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="sku">SKU</Label>
-                  <Input
-                    id="sku"
-                    value={formData.sku}
-                    onChange={(e) =>
-                      setFormData({ ...formData, sku: e.target.value })
-                    }
-                  />
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="sku" className="text-sm font-medium">
+                SKU
+              </label>
+              <Input
+                id="sku"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="url">Ürün URL</Label>
-                  <Input
-                    id="url"
-                    type="url"
-                    value={formData.url}
-                    onChange={(e) =>
-                      setFormData({ ...formData, url: e.target.value })
-                    }
-                  />
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="price" className="text-sm font-medium">
+                Price
+              </label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={handleChange}
+              />
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="retail_price">Satış Fiyatı</Label>
-                    <Input
-                      id="retail_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.retail_price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, retail_price: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cost_price">Maliyet Fiyatı</Label>
-                    <Input
-                      id="cost_price"
-                      type="number"
-                      step="0.01"
-                      value={formData.cost_price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, cost_price: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="url" className="text-sm font-medium">
+                Product URL
+              </label>
+              <Input
+                id="url"
+                name="url"
+                type="url"
+                value={formData.url}
+                onChange={handleChange}
+              />
+            </div>
 
-                <div className="flex justify-end gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(-1)}
-                  >
-                    İptal
-                  </Button>
-                  <Button type="submit">Kaydet</Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Save Changes
+              </Button>
+            </div>
+          </form>
         </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 

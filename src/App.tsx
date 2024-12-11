@@ -19,6 +19,28 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/Dashboard";
+import UserDetail from "./pages/admin/UserDetail";
+
+// Creator Pages
+import Creators from "./pages/creators";
+import NewCreator from "./pages/creators/new";
+import CreatorDetail from "./pages/creators/[id]";
+import EditCreator from "./pages/creators/edit/[id]";
+
+// Product Pages
+import Products from "./pages/products";
+import NewProduct from "./pages/products/new";
+import ProductDetail from "./pages/products/[id]";
+import EditProduct from "./pages/products/edit/[id]";
+
+// Campaign Pages
+import Campaigns from "./pages/campaigns";
+import NewCampaign from "./pages/campaigns/new";
+import CampaignDetail from "./pages/campaigns/[id]";
+import EditCampaign from "./pages/campaigns/edit/[id]";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

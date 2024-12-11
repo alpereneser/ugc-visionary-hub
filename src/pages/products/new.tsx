@@ -1,79 +1,69 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
-import { Header } from "@/components/Header";
+import { MainLayout } from "@/components/layouts/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
-
-const formSchema = z.object({
-  name: z.string().min(2, "Product name must be at least 2 characters"),
-  description: z.string().optional(),
-  sku: z.string().optional(),
-  url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  retailPrice: z.number().optional().nullable(),
-  costPrice: z.number().optional().nullable(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useSession } from "@supabase/auth-helpers-react";
 
 const NewProduct = () => {
   const navigate = useNavigate();
+  const session = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      sku: "",
-      url: "",
-      retailPrice: null,
-      costPrice: null,
-    },
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    sku: "",
+    price: "",
+    url: "",
   });
 
-  const onSubmit = async (values: FormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      const { data, error } = await supabase.from("products").insert({
-        name: values.name,
-        description: values.description,
-        sku: values.sku,
-        url: values.url || null,
-        retail_price: values.retailPrice,
-        cost_price: values.costPrice,
-      }).select().single();
+      const { data, error } = await supabase
+        .from("products")
+        .insert([
+          {
+            name: formData.name,
+            description: formData.description,
+            sku: formData.sku,
+            price: parseFloat(formData.price) || 0,
+            url: formData.url,
+            created_by: session?.user?.id,
+          },
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast.success("Product added successfully");
+      toast.success("Product created successfully");
       navigate(`/products/${data.id}`);
     } catch (error) {
-      console.error("Error adding product:", error);
-      toast.error("Failed to add product");
+      console.error("Error creating product:", error);
+      toast.error("Failed to create product");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <Button
@@ -83,144 +73,89 @@ const NewProduct = () => {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Add New Product</h1>
+            <h1 className="text-2xl font-bold">New Product</h1>
           </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Product Name *</Label>
+              <Input
+                id="name"
                 name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="Enter product name"
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
                 name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter product description"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Enter product description"
+                rows={4}
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="sku">SKU</Label>
+              <Input
+                id="sku"
                 name="sku"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SKU (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product SKU" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                value={formData.sku}
+                onChange={handleChange}
+                placeholder="Enter product SKU"
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="space-y-2">
+              <Label htmlFor="price">Price</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Enter product price"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="url">Product URL</Label>
+              <Input
+                id="url"
                 name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product URL (Optional)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="url" 
-                        placeholder="Enter product URL" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                type="url"
+                value={formData.url}
+                onChange={handleChange}
+                placeholder="Enter product URL"
               />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="retailPrice"
-                  render={({ field: { value, onChange, ...field } }) => (
-                    <FormItem>
-                      <FormLabel>Retail Price (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01"
-                          min="0"
-                          placeholder="Enter retail price" 
-                          value={value ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            onChange(val ? Number(val) : null);
-                          }}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="costPrice"
-                  render={({ field: { value, onChange, ...field } }) => (
-                    <FormItem>
-                      <FormLabel>Cost Price (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01"
-                          min="0"
-                          placeholder="Enter cost price" 
-                          value={value ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            onChange(val ? Number(val) : null);
-                          }}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(-1)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Adding..." : "Add Product"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating..." : "Create Product"}
+              </Button>
+            </div>
+          </form>
         </div>
-      </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
