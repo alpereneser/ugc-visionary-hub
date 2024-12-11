@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
 import {
   Select,
   SelectContent,
@@ -17,13 +18,18 @@ import { useState } from "react";
 export const CampaignsList = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const session = useSession();
 
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ["campaigns", statusFilter],
+    queryKey: ["campaigns", statusFilter, session?.user?.id],
     queryFn: async () => {
       let query = supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+          *,
+          campaign_creators!inner(creator_id),
+          creator_products!inner(creator_id)
+        `)
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
@@ -34,6 +40,7 @@ export const CampaignsList = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!session?.user?.id,
   });
 
   const getCampaignStatus = (campaign: any) => {

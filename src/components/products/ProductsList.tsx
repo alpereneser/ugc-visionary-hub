@@ -1,23 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export const ProductsList = () => {
   const navigate = useNavigate();
+  const session = useSession();
 
   const { data: products, isLoading, error } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", session?.user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select(`
+          *,
+          creator_products!inner(creator_id)
+        `)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
+    enabled: !!session?.user?.id,
   });
 
   if (isLoading) {
