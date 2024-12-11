@@ -23,21 +23,19 @@ export const Header = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    if (isLoggingOut) return; // Prevent multiple logout attempts
+    if (isLoggingOut) return;
     
     setIsLoggingOut(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      navigate("/login");
+      await supabase.auth.signOut();
+      navigate("/login", { replace: true });
     } catch (error: any) {
       console.error("Logout failed:", error);
       toast.error("An error occurred during logout");
+      // Force navigation to login even if there was an error
+      navigate("/login", { replace: true });
     } finally {
       setIsLoggingOut(false);
-      // Force navigation to login even if there was an error
-      navigate("/login");
     }
   };
 
