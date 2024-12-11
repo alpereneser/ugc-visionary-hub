@@ -1,6 +1,7 @@
 import { WisePaymentData } from './types.ts';
 
 export async function createWiseQuote(amount: number): Promise<any> {
+  console.log('Creating Wise quote with amount:', amount);
   const response = await fetch('https://api.wise.com/v3/quotes', {
     method: 'POST',
     headers: {
@@ -21,10 +22,13 @@ export async function createWiseQuote(amount: number): Promise<any> {
     throw new Error(`Failed to create Wise quote: ${errorText}`);
   }
 
-  return response.json();
+  const quote = await response.json();
+  console.log('Wise quote created successfully:', quote);
+  return quote;
 }
 
 export async function createWisePaymentLink(quoteId: string, userId: string): Promise<string> {
+  console.log('Creating Wise payment link for quote:', quoteId);
   const response = await fetch('https://api.wise.com/v3/payment-urls', {
     method: 'POST',
     headers: {
@@ -45,5 +49,6 @@ export async function createWisePaymentLink(quoteId: string, userId: string): Pr
   }
 
   const data = await response.json();
+  console.log('Wise payment link created successfully:', data);
   return data.paymentUrl;
 }
