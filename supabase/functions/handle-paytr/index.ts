@@ -7,13 +7,11 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Parse request body
     let body;
     try {
       body = await req.json()
@@ -40,13 +38,11 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Supabase client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get user details
     const { data: userData, error: userError } = await supabaseAdmin
       .from('profiles')
       .select('email, full_name')
@@ -64,21 +60,22 @@ serve(async (req) => {
       )
     }
 
-    // Generate a unique payment ID
     const merchantOid = `${user_id}-${Date.now()}`
-    
-    // PayTR requires amount in cents (1 USD = 100 cents)
     const amount = 5000 // $50.00
-
-    // Get user's IP address from request headers
     const userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '1.2.3.4'
-
-    // Get the origin, defaulting to tracefluence.com
     const origin = req.headers.get('origin') || 'https://tracefluence.com'
-    console.log('Request origin:', origin)
+    
+    console.log('Request details:', {
+      origin,
+      userIp,
+      merchantOid,
+      userEmail: userData.email,
+      userName: userData.full_name
+    })
 
-    // Prepare payment data
-    const paytrData = {
+    // Prepare payment data as URLSearchParams
+    const params = new URLSearchParams()
+    const paymentData = {
       merchant_id: Deno.env.get('PAYTR_MERCHANT_ID'),
       merchant_oid: merchantOid,
       email: userData.email,
@@ -89,40 +86,43 @@ serve(async (req) => {
       merchant_fail_url: `${origin}/home`,
       user_basket: JSON.stringify([["Lifetime Access", "1", amount]]),
       user_ip: userIp,
-      debug_on: 0, // Set to 0 for production
-      test_mode: 0, // Set to 0 for production
+      debug_on: 0,
+      test_mode: 0,
       no_installment: 0,
       max_installment: 0
     }
 
-    console.log('PayTR request data:', {
-      ...paytrData,
-      merchant_id: '***hidden***', // Hide sensitive data in logs
-    })
-
     // Generate hash string
-    const hashStr = `${Deno.env.get('PAYTR_MERCHANT_ID')}${paytrData.merchant_oid}${paytrData.payment_amount}${paytrData.merchant_ok_url}${paytrData.merchant_fail_url}${paytrData.email}${Deno.env.get('PAYTR_MERCHANT_SALT')}`
+    const hashStr = `${paymentData.merchant_id}${paymentData.merchant_oid}${paymentData.payment_amount}${paymentData.merchant_ok_url}${paymentData.merchant_fail_url}${paymentData.email}${Deno.env.get('PAYTR_MERCHANT_SALT')}`
     const hash = new TextEncoder().encode(hashStr)
     const hashBuffer = await crypto.subtle.digest('SHA-256', hash)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // Add token to payment data
-    const formData = new FormData()
-    Object.entries(paytrData).forEach(([key, value]) => {
-      formData.append(key, value.toString())
+    // Add all parameters including the token
+    Object.entries(paymentData).forEach(([key, value]) => {
+      params.append(key, value.toString())
     })
-    formData.append('paytr_token', hashHex)
+    params.append('paytr_token', hashHex)
+
+    console.log('Sending request to PayTR with params:', Object.fromEntries(params))
 
     // Make request to PayTR API
     const paytrResponse = await fetch('https://www.paytr.com/odeme/api/get-token', {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params
     })
 
     if (!paytrResponse.ok) {
       const errorText = await paytrResponse.text()
-      console.error('PayTR API error:', errorText)
+      console.error('PayTR API error response:', {
+        status: paytrResponse.status,
+        statusText: paytrResponse.statusText,
+        body: errorText
+      })
       return new Response(
         JSON.stringify({ error: 'Payment provider error', details: errorText }),
         { 
@@ -132,13 +132,19 @@ serve(async (req) => {
       )
     }
 
+    const responseText = await paytrResponse.text()
+    console.log('PayTR API raw response:', responseText)
+
     let paytrResult;
     try {
-      paytrResult = await paytrResponse.json()
+      paytrResult = JSON.parse(responseText)
     } catch (e) {
-      console.error('Error parsing PayTR response:', e)
+      console.error('Error parsing PayTR response:', e, 'Raw response:', responseText)
       return new Response(
-        JSON.stringify({ error: 'Invalid response from payment provider' }),
+        JSON.stringify({ 
+          error: 'Invalid response from payment provider',
+          details: responseText
+        }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -146,7 +152,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('PayTR API response:', paytrResult)
+    console.log('PayTR API parsed response:', paytrResult)
 
     if (paytrResult.status === 'success') {
       return new Response(
@@ -173,7 +179,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in handle-paytr function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
