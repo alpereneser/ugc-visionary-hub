@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ProductActions } from "@/components/products/ProductActions";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -42,15 +43,18 @@ const ProductDetail = () => {
       <Header />
       <main className="container mx-auto px-4 py-8 pt-24">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-3xl font-bold">{product.name}</h1>
+            </div>
+            <ProductActions productId={product.id} />
           </div>
 
           <div className="grid gap-6">

@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Calendar, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { CampaignActions } from "@/components/campaigns/CampaignActions";
 
 type AdditionalExpense = {
   name: string;
@@ -78,7 +79,6 @@ const CampaignDetail = () => {
 
       if (error) throw error;
       
-      // Transform the data to match our expected types
       return {
         ...data,
         media: data.media as MediaItem[] || null,
@@ -134,13 +134,9 @@ const CampaignDetail = () => {
 
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold">{campaign?.name}</h1>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/campaigns")}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Campaigns
-            </Button>
+            <div className="flex items-center gap-2">
+              <CampaignActions campaignId={campaign?.id} />
+            </div>
           </div>
 
           <div className="grid gap-6">
