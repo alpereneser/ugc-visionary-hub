@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { Heart, Mail, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
@@ -37,14 +37,26 @@ export const Footer = () => {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-            <Link to="/privacy" className="hover:text-primary transition-colors">
-              Privacy Policy
+            <Link 
+              to="/privacy" 
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
+              <FileText className="w-4 h-4" />
+              Gizlilik Politikası
             </Link>
-            <Link to="/terms" className="hover:text-primary transition-colors">
-              Terms of Service
+            <Link 
+              to="/terms" 
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
+              <FileText className="w-4 h-4" />
+              Kullanım Koşulları
             </Link>
-            <Link to="/contact" className="hover:text-primary transition-colors">
-              Contact Us
+            <Link 
+              to="/contact" 
+              className="hover:text-primary transition-colors flex items-center gap-1"
+            >
+              <Mail className="w-4 h-4" />
+              Bize Ulaşın
             </Link>
           </div>
           

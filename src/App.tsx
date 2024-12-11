@@ -15,20 +15,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Settings from "./pages/Settings";
 import Feedback from "./pages/Feedback";
 import Home from "./pages/Home";
-import Creators from "./pages/Creators";
-import NewCreator from "./pages/creators/new";
-import CreatorDetail from "./pages/creators/[id]";
-import EditCreator from "./pages/creators/edit/[id]";
-import Products from "./pages/products";
-import NewProduct from "./pages/products/new";
-import ProductDetail from "./pages/products/[id]";
-import EditProduct from "./pages/products/edit/[id]";
-import Campaigns from "./pages/campaigns";
-import NewCampaign from "./pages/campaigns/new";
-import CampaignDetail from "./pages/campaigns/[id]";
-import EditCampaign from "./pages/campaigns/edit/[id]";
-import AdminDashboard from "./pages/admin/Dashboard";
-import UserDetail from "./pages/admin/UserDetail";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +43,9 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
 
                 {/* Protected routes */}
                 <Route path="/settings" element={<AuthWrapper><Settings /></AuthWrapper>} />
