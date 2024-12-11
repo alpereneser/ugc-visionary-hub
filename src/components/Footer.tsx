@@ -1,7 +1,32 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Footer = () => {
+  const session = useSession();
+
+  const { data: license } = useQuery({
+    queryKey: ["user-license", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("user_licenses")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const hasLifetimeAccess = license?.has_lifetime_access;
+  const isTrialActive = license && new Date(license.trial_end_date) > new Date();
+
   return (
     <footer className="bg-white py-4 border-t">
       <div className="container mx-auto px-4">
@@ -23,8 +48,26 @@ export const Footer = () => {
             </Link>
           </div>
           
-          <div className="text-xs text-gray-500">
-            © {new Date().getFullYear()} UGC Tracker
+          <div className="flex items-center gap-2">
+            {session && (
+              <div className="text-sm mr-4">
+                {hasLifetimeAccess ? (
+                  <span className="text-primary font-medium">Lifetime Access</span>
+                ) : (
+                  <>
+                    <span className="text-gray-600">License Day: </span>
+                    {isTrialActive ? (
+                      <span className="font-medium">1</span>
+                    ) : (
+                      <span className="text-red-500 font-medium">License Required</span>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            <div className="text-xs text-gray-500">
+              © {new Date().getFullYear()} UGC Tracker
+            </div>
           </div>
         </div>
       </div>
