@@ -32,7 +32,7 @@ export const Header = () => {
   };
 
   const getInitials = (name: string) => {
-    if (!name) return "U";
+    if (!name) return "T";
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
@@ -60,9 +60,9 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">U</span>
+              <span className="text-white font-bold">T</span>
             </div>
-            <span className="font-['Montserrat'] font-bold text-xl">UGC Tracker</span>
+            <span className="font-['Montserrat'] font-bold text-xl">TRACEFLUENCE</span>
           </Link>
 
           {session && (
