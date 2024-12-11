@@ -9,7 +9,8 @@ import { Users, Package, BarChart3 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Pricing } from "@/components/Pricing";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { BankTransferPayment } from "@/components/payment/BankTransferPayment";
 import { motion } from "framer-motion";
 
 const Home = () => {
@@ -130,7 +131,6 @@ const Home = () => {
 
   const isAdmin = session?.user?.email === "alperen@tracefluence.com";
   const hasLifetimeAccess = license?.has_lifetime_access;
-  const shouldShowPricing = !isAdmin && !hasLifetimeAccess;
   const trialDaysLeft = license?.trial_end_date ? Math.ceil((new Date(license.trial_end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
@@ -151,12 +151,18 @@ const Home = () => {
               Get lifetime access to all features of UGC Tracker. 
               Pay once, use forever!
             </p>
-            <Button 
-              onClick={() => navigate("/home")} 
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-            >
-              Get Lifetime License - $50
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                >
+                  Get Lifetime License - $50
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <BankTransferPayment />
+              </DialogContent>
+            </Dialog>
           </motion.div>
         )}
 
@@ -196,7 +202,6 @@ const Home = () => {
             </div>
           </div>
         </div>
-        {shouldShowPricing && <Pricing />}
       </div>
     </MainLayout>
   );
