@@ -16,10 +16,17 @@ export const ProductsList = () => {
       const { data, error } = await supabase
         .from("products")
         .select(`
-          *,
-          creator_products!inner(creator_id)
+          id,
+          name,
+          description,
+          sku,
+          retail_price,
+          cost_price,
+          url,
+          created_at
         `)
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
       return data;
     },
@@ -52,30 +59,40 @@ export const ProductsList = () => {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {products?.map((product) => (
-          <Card
-            key={product.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow relative z-0"
-            onClick={() => navigate(`/products/${product.id}`)}
-          >
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-              {product.description && (
-                <p className="text-sm text-muted-foreground mb-2">
-                  {product.description}
-                </p>
-              )}
-              <div className="flex justify-between items-center text-sm">
-                <span>SKU: {product.sku || "N/A"}</span>
-                <span className="font-medium">
-                  ${product.retail_price || "N/A"}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {products?.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-4">No products found. Add your first product to get started.</p>
+          <Button onClick={() => navigate("/products/new")}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add First Product
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {products?.map((product) => (
+            <Card
+              key={product.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/products/${product.id}`)}
+            >
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                {product.description && (
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                    {product.description}
+                  </p>
+                )}
+                <div className="flex justify-between items-center text-sm">
+                  <span>SKU: {product.sku || "N/A"}</span>
+                  <span className="font-medium">
+                    ${product.retail_price?.toFixed(2) || "N/A"}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
