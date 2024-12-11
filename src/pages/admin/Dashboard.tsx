@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Users, Package, BarChart3 } from "lucide-react";
+import { Users, Package, BarChart3, Plus } from "lucide-react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -19,15 +19,13 @@ const AdminDashboard = () => {
         return count || 0;
       };
 
-      const [usersCount, creatorsCount, productsCount, campaignsCount] = await Promise.all([
-        fetchCount("users"),
+      const [creatorsCount, productsCount, campaignsCount] = await Promise.all([
         fetchCount("ugc_creators"),
         fetchCount("products"),
         fetchCount("campaigns"),
       ]);
 
       return {
-        users: usersCount,
         creators: creatorsCount,
         products: productsCount,
         campaigns: campaignsCount,
@@ -35,11 +33,11 @@ const AdminDashboard = () => {
     },
   });
 
-  const { data: recentUsers } = useQuery({
-    queryKey: ["recent-users"],
+  const { data: recentProfiles } = useQuery({
+    queryKey: ["recent-profiles"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
@@ -64,21 +62,34 @@ const AdminDashboard = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate("/creators/new")}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Creator
+            </Button>
+            <Button
+              onClick={() => navigate("/products/new")}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Product
+            </Button>
+            <Button
+              onClick={() => navigate("/campaigns/new")}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Campaign
+            </Button>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <h3 className="text-2xl font-bold">{stats?.users}</h3>
-                </div>
-                <Users className="w-8 h-8 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -126,21 +137,21 @@ const AdminDashboard = () => {
                 </Button>
               </div>
               <div className="space-y-4">
-                {recentUsers?.map((user) => (
+                {recentProfiles?.map((profile) => (
                   <div
-                    key={user.id}
+                    key={profile.id}
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div>
-                      <p className="font-medium">{user.email}</p>
+                      <p className="font-medium">{profile.email}</p>
                       <p className="text-sm text-muted-foreground">
-                        Joined {new Date(user.created_at).toLocaleDateString()}
+                        Joined {new Date(profile.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate(`/admin/users/${user.id}`)}
+                      onClick={() => navigate(`/admin/users/${profile.id}`)}
                     >
                       View
                     </Button>
