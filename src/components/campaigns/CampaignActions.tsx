@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CampaignActionsProps {
   campaignId: string;
@@ -27,9 +28,14 @@ interface CampaignActionsProps {
 
 export const CampaignActions = ({ campaignId }: CampaignActionsProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
     try {
       // Delete related records first
       await supabase.from("campaign_creators").delete().eq("campaign_id", campaignId);
@@ -44,23 +50,30 @@ export const CampaignActions = ({ campaignId }: CampaignActionsProps) => {
 
       if (error) throw error;
 
+      // Invalidate queries and show success message
+      await queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Kampanya başarıyla silindi");
-      navigate("/campaigns");
+      
+      // Close dialog and navigate
+      setShowDeleteDialog(false);
+      navigate("/campaigns", { replace: true });
     } catch (error) {
       console.error("Error deleting campaign:", error);
       toast.error("Kampanya silinirken bir hata oluştu");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <>
+    <div className="relative z-0">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="z-50">
           <DropdownMenuItem onClick={() => navigate(`/campaigns/edit/${campaignId}`)}>
             <Pencil className="mr-2 h-4 w-4" />
             Düzenle
@@ -76,7 +89,7 @@ export const CampaignActions = ({ campaignId }: CampaignActionsProps) => {
       </DropdownMenu>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-50">
           <AlertDialogHeader>
             <AlertDialogTitle>Kampanyayı silmek istediğinizden emin misiniz?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -84,16 +97,17 @@ export const CampaignActions = ({ campaignId }: CampaignActionsProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Sil
+              {isDeleting ? "Siliniyor..." : "Sil"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 };

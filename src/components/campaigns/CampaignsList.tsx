@@ -18,7 +18,7 @@ export const CampaignsList = () => {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const { data: campaigns, isLoading } = useQuery({
+  const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["campaigns", statusFilter],
     queryFn: async () => {
       let query = supabase
@@ -49,7 +49,19 @@ export const CampaignsList = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-center min-h-[200px] flex items-center justify-center">
+        Kampanyalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.
+      </div>
+    );
   }
 
   return (
@@ -64,7 +76,7 @@ export const CampaignsList = () => {
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-50">
               <SelectItem value="all">All Campaigns</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
@@ -83,7 +95,7 @@ export const CampaignsList = () => {
         {campaigns?.map((campaign) => (
           <Card
             key={campaign.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer hover:shadow-lg transition-shadow relative z-0"
             onClick={() => navigate(`/campaigns/${campaign.id}`)}
           >
             <CardContent className="p-6">
