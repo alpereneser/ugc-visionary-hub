@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,7 @@ import {
 
 const profileFormSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Invalid email address").optional(),
 });
 
 export const ProfileForm = () => {
@@ -35,15 +36,44 @@ export const ProfileForm = () => {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       fullName: "",
+      email: session?.user?.email || "",
     },
   });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          toast.error("Error loading profile");
+          return;
+        }
+
+        if (data) {
+          form.reset({
+            fullName: data.full_name || "",
+            email: session.user.email || "",
+          });
+        }
+      }
+    };
+
+    loadProfile();
+  }, [session, supabase, form]);
 
   const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     try {
       setIsLoading(true);
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: values.fullName })
+        .update({ 
+          full_name: values.fullName,
+        })
         .eq('id', session?.user?.id);
 
       if (error) throw error;
@@ -75,6 +105,25 @@ export const ProfileForm = () => {
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your full name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="email" 
+                      placeholder="Your email address" 
+                      {...field} 
+                      disabled 
+                      className="bg-muted"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
