@@ -64,10 +64,10 @@ export const Pricing = () => {
 
       if (response.error) throw response.error;
 
-      toast.success("Payment process initiated");
+      toast.success("Ödeme işlemi başlatıldı");
       refetch(); // Refresh license data after payment
     } catch (error) {
-      toast.error("Error initiating payment process");
+      toast.error("Ödeme işlemi başlatılırken bir hata oluştu");
       console.error(error);
     } finally {
       setIsLoading(false);
