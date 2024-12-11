@@ -21,14 +21,26 @@ export const CampaignsList = () => {
   const session = useSession();
 
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ["campaigns", statusFilter, session?.user?.id],
+    queryKey: ["campaigns", statusFilter],
     queryFn: async () => {
+      console.log("Fetching campaigns...");
       let query = supabase
         .from("campaigns")
         .select(`
           *,
-          campaign_creators!inner(creator_id),
-          creator_products!inner(creator_id)
+          campaign_creators (
+            creator_id,
+            ugc_creators (
+              first_name,
+              last_name
+            )
+          ),
+          campaign_products (
+            product_id,
+            products (
+              name
+            )
+          )
         `)
         .order("created_at", { ascending: false });
 
@@ -37,7 +49,13 @@ export const CampaignsList = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        throw error;
+      }
+
+      console.log("Campaigns fetched:", data);
       return data;
     },
     enabled: !!session?.user?.id,
@@ -64,6 +82,7 @@ export const CampaignsList = () => {
   }
 
   if (error) {
+    console.error("Query error:", error);
     return (
       <div className="text-red-500 text-center min-h-[200px] flex items-center justify-center">
         Kampanyalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.
@@ -74,66 +93,83 @@ export const CampaignsList = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Campaigns</h1>
+        <h1 className="text-2xl font-bold">Kampanyalar</h1>
         <div className="flex gap-4 items-center">
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value)}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Duruma göre filtrele" />
             </SelectTrigger>
-            <SelectContent className="z-50">
-              <SelectItem value="all">All Campaigns</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">Tüm Kampanyalar</SelectItem>
+              <SelectItem value="active">Aktif</SelectItem>
+              <SelectItem value="draft">Taslak</SelectItem>
+              <SelectItem value="completed">Tamamlandı</SelectItem>
+              <SelectItem value="upcoming">Yaklaşan</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => navigate("/campaigns/new")}>
             <Plus className="w-4 h-4 mr-2" />
-            New Campaign
+            Yeni Kampanya
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {campaigns?.map((campaign) => (
-          <Card
-            key={campaign.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow relative z-0"
-            onClick={() => navigate(`/campaigns/${campaign.id}`)}
-          >
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg mb-2">{campaign.name}</h3>
-              <div className="text-sm text-muted-foreground">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    {campaign.start_date
-                      ? format(new Date(campaign.start_date), "MMM d, yyyy")
-                      : "No start date"}
-                  </span>
-                </div>
-                <div
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    getCampaignStatus(campaign) === "active"
-                      ? "bg-green-100 text-green-800"
+      {campaigns?.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          Henüz kampanya eklenmemiş.
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {campaigns?.map((campaign) => (
+            <Card
+              key={campaign.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/campaigns/${campaign.id}`)}
+            >
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-2">{campaign.name}</h3>
+                {campaign.description && (
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {campaign.description}
+                  </p>
+                )}
+                <div className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      {campaign.start_date
+                        ? format(new Date(campaign.start_date), "dd MMM yyyy")
+                        : "Başlangıç tarihi belirtilmemiş"}
+                    </span>
+                  </div>
+                  <div
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      getCampaignStatus(campaign) === "active"
+                        ? "bg-green-100 text-green-800"
+                        : getCampaignStatus(campaign) === "completed"
+                        ? "bg-gray-100 text-gray-800"
+                        : getCampaignStatus(campaign) === "upcoming"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {getCampaignStatus(campaign) === "active"
+                      ? "Aktif"
                       : getCampaignStatus(campaign) === "completed"
-                      ? "bg-gray-100 text-gray-800"
+                      ? "Tamamlandı"
                       : getCampaignStatus(campaign) === "upcoming"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {getCampaignStatus(campaign)}
+                      ? "Yaklaşan"
+                      : "Taslak"}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
