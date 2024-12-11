@@ -7,14 +7,17 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    // Parse request body
     let body;
     try {
       body = await req.json()
+      console.log('Received request body:', body)
     } catch (e) {
       console.error('Error parsing request body:', e)
       return new Response(
@@ -29,6 +32,7 @@ serve(async (req) => {
     const { user_id } = body
 
     if (!user_id) {
+      console.error('Missing user_id in request')
       return new Response(
         JSON.stringify({ error: 'User ID is required' }),
         { 
@@ -38,11 +42,13 @@ serve(async (req) => {
       )
     }
 
+    // Initialize Supabase client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Fetch user data
     const { data: userData, error: userError } = await supabaseAdmin
       .from('profiles')
       .select('email, full_name')
@@ -60,23 +66,42 @@ serve(async (req) => {
       )
     }
 
+    console.log('User data retrieved:', userData)
+
+    // Prepare PayTR parameters
+    const merchantId = Deno.env.get('PAYTR_MERCHANT_ID')
+    const merchantKey = Deno.env.get('PAYTR_MERCHANT_KEY')
+    const merchantSalt = Deno.env.get('PAYTR_MERCHANT_SALT')
+
+    if (!merchantId || !merchantKey || !merchantSalt) {
+      console.error('Missing PayTR credentials')
+      return new Response(
+        JSON.stringify({ error: 'Payment configuration error' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     const merchantOid = `${user_id}-${Date.now()}`
     const amount = 5000 // $50.00
     const userIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '1.2.3.4'
     const origin = req.headers.get('origin') || 'https://tracefluence.com'
     
     console.log('Request details:', {
-      origin,
-      userIp,
+      merchantId,
       merchantOid,
       userEmail: userData.email,
-      userName: userData.full_name
+      userName: userData.full_name,
+      amount,
+      userIp,
+      origin
     })
 
-    // Prepare payment data as URLSearchParams
-    const params = new URLSearchParams()
+    // Prepare payment data
     const paymentData = {
-      merchant_id: Deno.env.get('PAYTR_MERCHANT_ID'),
+      merchant_id: merchantId,
       merchant_oid: merchantOid,
       email: userData.email,
       payment_amount: amount,
@@ -89,17 +114,19 @@ serve(async (req) => {
       debug_on: 0,
       test_mode: 0,
       no_installment: 0,
-      max_installment: 0
+      max_installment: 0,
+      lang: 'en'
     }
 
     // Generate hash string
-    const hashStr = `${paymentData.merchant_id}${paymentData.merchant_oid}${paymentData.payment_amount}${paymentData.merchant_ok_url}${paymentData.merchant_fail_url}${paymentData.email}${Deno.env.get('PAYTR_MERCHANT_SALT')}`
+    const hashStr = `${merchantId}${merchantOid}${amount}${paymentData.merchant_ok_url}${paymentData.merchant_fail_url}${userData.email}${merchantSalt}`
     const hash = new TextEncoder().encode(hashStr)
     const hashBuffer = await crypto.subtle.digest('SHA-256', hash)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // Add all parameters including the token
+    // Create URLSearchParams
+    const params = new URLSearchParams()
     Object.entries(paymentData).forEach(([key, value]) => {
       params.append(key, value.toString())
     })
@@ -124,7 +151,11 @@ serve(async (req) => {
         body: errorText
       })
       return new Response(
-        JSON.stringify({ error: 'Payment provider error', details: errorText }),
+        JSON.stringify({ 
+          error: 'Payment provider error', 
+          details: errorText,
+          status: paytrResponse.status
+        }),
         { 
           status: paytrResponse.status,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -158,6 +189,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           paymentUrl: `https://www.paytr.com/odeme/guvenli/${paytrResult.token}`,
+          merchantOid: merchantOid
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
