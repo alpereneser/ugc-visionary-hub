@@ -4,6 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { AuthWrapper } from "@/components/AuthWrapper";
+import { supabase } from "./integrations/supabase/client";
+
+// Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -23,8 +27,6 @@ import Campaigns from "./pages/campaigns";
 import NewCampaign from "./pages/campaigns/new";
 import CampaignDetail from "./pages/campaigns/[id]";
 import EditCampaign from "./pages/campaigns/edit/[id]";
-import { supabase } from "./integrations/supabase/client";
-import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,43 +36,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleAuthStateChange = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = '/login';
-      }
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Auth state check failed:', error);
-      setIsLoading(false);
-      window.location.href = '/login';
-    }
-  };
-
-  useEffect(() => {
-    handleAuthStateChange();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        queryClient.clear();
-        window.location.href = '/login';
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-
-  return <>{children}</>;
-};
 
 const App = () => {
   return (
@@ -86,126 +51,126 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route
-                path="/settings"
-                element={
-                  <AuthWrapper>
-                    <Settings />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/feedback"
-                element={
-                  <AuthWrapper>
-                    <Feedback />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/home"
-                element={
-                  <AuthWrapper>
-                    <Home />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/creators"
-                element={
-                  <AuthWrapper>
-                    <Creators />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/creators/new"
-                element={
-                  <AuthWrapper>
-                    <NewCreator />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/creators/:id"
-                element={
-                  <AuthWrapper>
-                    <CreatorDetail />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/creators/edit/:id"
-                element={
-                  <AuthWrapper>
-                    <EditCreator />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/products"
-                element={
-                  <AuthWrapper>
-                    <Products />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/products/new"
-                element={
-                  <AuthWrapper>
-                    <NewProduct />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/products/:id"
-                element={
-                  <AuthWrapper>
-                    <ProductDetail />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/products/edit/:id"
-                element={
-                  <AuthWrapper>
-                    <EditProduct />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/campaigns"
-                element={
-                  <AuthWrapper>
-                    <Campaigns />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/campaigns/new"
-                element={
-                  <AuthWrapper>
-                    <NewCampaign />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/campaigns/:id"
-                element={
-                  <AuthWrapper>
-                    <CampaignDetail />
-                  </AuthWrapper>
-                }
-              />
-              <Route
-                path="/campaigns/edit/:id"
-                element={
-                  <AuthWrapper>
-                    <EditCampaign />
-                  </AuthWrapper>
-                }
-              />
+                <Route
+                  path="/settings"
+                  element={
+                    <AuthWrapper>
+                      <Settings />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/feedback"
+                  element={
+                    <AuthWrapper>
+                      <Feedback />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/home"
+                  element={
+                    <AuthWrapper>
+                      <Home />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/creators"
+                  element={
+                    <AuthWrapper>
+                      <Creators />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/creators/new"
+                  element={
+                    <AuthWrapper>
+                      <NewCreator />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/creators/:id"
+                  element={
+                    <AuthWrapper>
+                      <CreatorDetail />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/creators/edit/:id"
+                  element={
+                    <AuthWrapper>
+                      <EditCreator />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/products"
+                  element={
+                    <AuthWrapper>
+                      <Products />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/products/new"
+                  element={
+                    <AuthWrapper>
+                      <NewProduct />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/products/:id"
+                  element={
+                    <AuthWrapper>
+                      <ProductDetail />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/products/edit/:id"
+                  element={
+                    <AuthWrapper>
+                      <EditProduct />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/campaigns"
+                  element={
+                    <AuthWrapper>
+                      <Campaigns />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/campaigns/new"
+                  element={
+                    <AuthWrapper>
+                      <NewCampaign />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/campaigns/:id"
+                  element={
+                    <AuthWrapper>
+                      <CampaignDetail />
+                    </AuthWrapper>
+                  }
+                />
+                <Route
+                  path="/campaigns/edit/:id"
+                  element={
+                    <AuthWrapper>
+                      <EditCampaign />
+                    </AuthWrapper>
+                  }
+                />
               </Routes>
             </BrowserRouter>
           </div>
