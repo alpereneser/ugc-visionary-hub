@@ -20,6 +20,7 @@ export const LicenseManagement = () => {
           *,
           profile:profiles(*)
         `)
+        .eq('status', 'pending')
         .order("created_at", { ascending: false });
 
       if (receiptsError) throw receiptsError;
