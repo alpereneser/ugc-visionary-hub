@@ -1,36 +1,39 @@
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus, UserPlus, FileText } from "lucide-react";
 
 export const UserActions = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex gap-3">
+    <>
       <Button
         onClick={() => navigate("/creators/new")}
-        className="flex items-center gap-2"
         variant="outline"
+        size="sm"
+        className="flex-1 sm:flex-none"
       >
-        <UserPlus className="w-4 h-4" />
+        <Plus className="w-4 h-4 mr-2" />
         Add Creator
       </Button>
       <Button
         onClick={() => navigate("/products/new")}
-        className="flex items-center gap-2"
         variant="outline"
+        size="sm"
+        className="flex-1 sm:flex-none"
       >
-        <FileText className="w-4 h-4" />
+        <Plus className="w-4 h-4 mr-2" />
         Add Content
       </Button>
       <Button
         onClick={() => navigate("/campaigns/new")}
-        className="flex items-center gap-2"
         variant="outline"
+        size="sm"
+        className="flex-1 sm:flex-none"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-4 h-4 mr-2" />
         Add Campaign
       </Button>
-    </div>
+    </>
   );
 };
