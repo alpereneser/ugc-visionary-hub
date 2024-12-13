@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { TrialExpiredOverlay } from "@/components/TrialExpiredOverlay";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -31,11 +32,12 @@ export const MainLayout = ({ children, showHeader = true }: MainLayoutProps) => 
   });
 
   const hasLifetimeAccess = license?.has_lifetime_access;
+  const isTrialActive = license && new Date(license.trial_end_date) > new Date();
+  const showOverlay = session && !isTrialActive && !hasLifetimeAccess;
 
   // Filter out the Pricing component if user has lifetime access
   const filteredChildren = React.Children.map(children, child => {
     if (React.isValidElement(child) && hasLifetimeAccess) {
-      // Remove Pricing component from children if it exists and user has lifetime access
       const childrenArray = React.Children.toArray(child.props.children);
       const filteredGrandChildren = childrenArray.filter(grandChild => {
         if (!React.isValidElement(grandChild)) return false;
@@ -54,8 +56,9 @@ export const MainLayout = ({ children, showHeader = true }: MainLayoutProps) => 
   return (
     <div className="min-h-screen flex flex-col">
       {showHeader && <Header />}
-      <main className={`flex-grow ${showHeader ? 'pt-16' : ''}`}>
+      <main className={`flex-grow ${showHeader ? 'pt-16' : ''} relative`}>
         {filteredChildren}
+        {showOverlay && <TrialExpiredOverlay />}
       </main>
       <Footer />
     </div>
