@@ -103,76 +103,81 @@ export const UsersManagement = () => {
   };
 
   if (isLoading) {
-    return <div>Loading users...</div>;
+    return <div className="p-4">Loading users...</div>;
   }
 
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Full Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Joined Date</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users?.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.full_name}</TableCell>
-                <TableCell>{user.company}</TableCell>
-                <TableCell>
-                  {format(new Date(user.created_at), "MMM d, yyyy")}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => navigate(`/admin/users/${user.id}`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handlePasswordReset(user.email)}
-                      disabled={isResettingPassword}
-                    >
-                      <Key className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setUserToDelete(user.id)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+      <div className="rounded-md border overflow-x-auto">
+        <div className="min-w-[800px]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Email</TableHead>
+                <TableHead className="min-w-[150px]">Full Name</TableHead>
+                <TableHead className="min-w-[150px]">Company</TableHead>
+                <TableHead className="min-w-[120px]">Joined Date</TableHead>
+                <TableHead className="min-w-[120px]">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {users?.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium break-all">{user.email}</TableCell>
+                  <TableCell>{user.full_name}</TableCell>
+                  <TableCell>{user.company}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {format(new Date(user.created_at), "MMM d, yyyy")}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2 flex-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(`/admin/users/${user.id}`)}
+                        className="h-8 w-8"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePasswordReset(user.email)}
+                        disabled={isResettingPassword}
+                        className="h-8 w-8"
+                      >
+                        <Key className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setUserToDelete(user.id)}
+                        className="h-8 w-8"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this user?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. The user will be permanently deleted from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="sm:flex-row gap-2">
+            <AlertDialogCancel disabled={isDeleting} className="mt-2 sm:mt-0">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-2 sm:mt-0"
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete"}
