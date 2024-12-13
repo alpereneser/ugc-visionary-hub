@@ -18,13 +18,13 @@ export const Hero = () => {
           <p className="mt-4 sm:mt-6 text-lg sm:text-xl lg:text-2xl leading-8 text-gray-300 px-4">
             The Ultimate Platform for Managing UGC Campaigns
           </p>
-          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-x-4 sm:gap-x-6 px-4">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6 px-4">
             <Link to="/register" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-base sm:text-lg px-6 sm:px-8">
                 Register and Start Tracking
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/login" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-purple-500 hover:bg-purple-600 border-purple-500 hover:border-purple-600">
                 Login
               </Button>
