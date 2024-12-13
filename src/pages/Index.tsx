@@ -6,7 +6,7 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 const Index = () => {
   return (
     <MainLayout showHeader={false}>
-      <div className="bg-black min-h-screen">
+      <div className="bg-black min-h-screen overflow-hidden">
         <Hero />
         <Features />
         <Pricing />
