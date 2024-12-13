@@ -1,11 +1,21 @@
 import { MainLayout } from "@/components/layouts/MainLayout";
-import { CampaignsList } from "@/components/campaigns/CampaignsList";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Creators = () => {
+  const navigate = useNavigate();
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Creators</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Creators</h1>
+          <Button onClick={() => navigate("/creators/new")}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Creator
+          </Button>
+        </div>
         {/* Add creators list content here */}
       </div>
     </MainLayout>
