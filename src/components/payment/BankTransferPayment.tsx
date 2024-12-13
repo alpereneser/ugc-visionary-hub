@@ -92,6 +92,7 @@ export const BankTransferPayment = () => {
             <div className="grid gap-2">
               <h3 className="font-semibold">Bank Transfer Details</h3>
               <div className="grid gap-1 text-sm">
+                <div><span className="font-medium">Account Holder:</span> Alperen Eser</div>
                 <div><span className="font-medium">IBAN:</span> TR54 0004 6003 9100 1000 1796 23</div>
                 <div><span className="font-medium">SWIFT Code:</span> AKBKTRIS</div>
                 <div><span className="font-medium">Bank Name:</span> Akbank T.A.Ş.</div>
