@@ -21,13 +21,14 @@ const reviews = [
 export const ReviewsGrid = () => {
   return (
     <div className="max-w-4xl mx-auto my-12 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+      <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8 items-center justify-center">
         {reviews.map((review, index) => (
-          <ReviewCard
-            key={index}
-            {...review}
-            delay={index * 200}
-          />
+          <div key={index} className="flex justify-center w-full">
+            <ReviewCard
+              {...review}
+              delay={index * 200}
+            />
+          </div>
         ))}
       </div>
     </div>
