@@ -18,12 +18,21 @@ export const LicenseManagement = () => {
         .from("payment_receipts")
         .select(`
           *,
-          profile:profiles(*)
+          profiles!inner (
+            id,
+            email,
+            full_name,
+            company
+          )
         `)
         .eq('status', 'pending')
         .order("created_at", { ascending: false });
 
-      if (receiptsError) throw receiptsError;
+      if (receiptsError) {
+        console.error("Error fetching receipts:", receiptsError);
+        throw receiptsError;
+      }
+      
       return receiptsData as PaymentReceipt[];
     },
   });
