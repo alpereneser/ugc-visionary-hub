@@ -16,5 +16,5 @@ export interface PaymentReceipt {
   notes: string | null;
   created_at: string;
   updated_at: string;
-  profile: Profile;
+  profiles: Profile; // Burayı profiles olarak değiştirdik
 }

@@ -32,10 +32,10 @@ export const LicenseTable = ({ receipts, onViewReceipt, onUpdateStatus }: Licens
         {receipts?.map((receipt) => (
           <TableRow key={receipt.id}>
             <TableCell>
-              {receipt.profile?.email}
+              {receipt.profiles.email}
               <br />
               <span className="text-sm text-muted-foreground">
-                {receipt.profile?.full_name}
+                {receipt.profiles.full_name}
               </span>
             </TableCell>
             <TableCell>${receipt.amount}</TableCell>
