@@ -21,20 +21,44 @@ serve(async (req) => {
 
     switch (action) {
       case 'deleteUser':
-        // First, set payment_receipts.user_id to null for this user's receipts
+        console.log('Starting user deletion process for userId:', userId)
+        
+        // First, get the user's profile ID
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .single()
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError)
+          throw profileError
+        }
+
+        // Update payment receipts to remove references
         const { error: updateError } = await supabase
           .from('payment_receipts')
-          .update({ user_id: null })
-          .eq('user_id', userId)
+          .update({ 
+            user_id: null,
+            status: 'deleted'
+          })
+          .eq('profile_id', profileData.id)
 
         if (updateError) {
           console.error('Error updating payment receipts:', updateError)
           throw updateError
         }
 
+        console.log('Successfully updated payment receipts')
+
         // Then delete the user
         const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
-        if (deleteError) throw deleteError
+        if (deleteError) {
+          console.error('Error deleting user:', deleteError)
+          throw deleteError
+        }
+
+        console.log('Successfully deleted user')
 
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
