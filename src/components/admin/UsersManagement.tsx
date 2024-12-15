@@ -18,7 +18,10 @@ export const UsersManagement = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Kullanıcılar yüklenirken hata oluştu");
+        throw error;
+      }
       return data;
     },
   });
@@ -28,17 +31,6 @@ export const UsersManagement = () => {
 
     setIsDeleting(true);
     try {
-      // First, update the payment receipt status to 'deleted'
-      const { error: updateError } = await supabase
-        .from("payment_receipts")
-        .update({ status: 'deleted' })
-        .eq("profile_id", userToDelete);
-
-      if (updateError) {
-        console.error("Error updating payment receipt:", updateError);
-      }
-
-      // Then proceed with user deletion using the edge function
       const { error } = await supabase.functions.invoke('admin-operations', {
         body: {
           action: 'deleteUser',
@@ -48,11 +40,11 @@ export const UsersManagement = () => {
 
       if (error) throw error;
 
-      toast.success("User deleted successfully");
+      toast.success("Kullanıcı başarıyla silindi");
       refetch();
     } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Failed to delete user");
+      console.error("Kullanıcı silinirken hata:", error);
+      toast.error("Kullanıcı silinemedi");
     } finally {
       setIsDeleting(false);
       setUserToDelete(null);
@@ -73,17 +65,17 @@ export const UsersManagement = () => {
 
       if (error) throw error;
 
-      toast.success("Password reset email sent successfully");
+      toast.success("Şifre sıfırlama e-postası gönderildi");
     } catch (error) {
-      console.error("Error sending password reset:", error);
-      toast.error("Failed to send password reset email");
+      console.error("Şifre sıfırlama hatası:", error);
+      toast.error("Şifre sıfırlama e-postası gönderilemedi");
     } finally {
       setIsResettingPassword(false);
     }
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading users...</div>;
+    return <div className="p-4">Kullanıcılar yükleniyor...</div>;
   }
 
   return (

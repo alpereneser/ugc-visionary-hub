@@ -23,65 +23,86 @@ serve(async (req) => {
       case 'deleteUser':
         console.log('Starting user deletion process for userId:', userId)
         
-        // First, get the user's profile ID
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .single()
+        try {
+          // First, update user licenses
+          const { error: licenseError } = await supabase
+            .from('user_licenses')
+            .delete()
+            .eq('user_id', userId)
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError)
-          throw profileError
+          if (licenseError) {
+            console.error('Error deleting user license:', licenseError)
+            throw licenseError
+          }
+
+          // Then, update payment receipts
+          const { error: receiptError } = await supabase
+            .from('payment_receipts')
+            .update({ 
+              user_id: null,
+              status: 'deleted'
+            })
+            .eq('user_id', userId)
+
+          if (receiptError) {
+            console.error('Error updating payment receipts:', receiptError)
+            throw receiptError
+          }
+
+          // Finally delete the user
+          const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
+          
+          if (deleteError) {
+            console.error('Error deleting user:', deleteError)
+            throw deleteError
+          }
+
+          console.log('Successfully deleted user and updated related records')
+          
+          return new Response(
+            JSON.stringify({ success: true }), 
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        } catch (error) {
+          console.error('Error in delete process:', error)
+          throw error
         }
-
-        // Update payment receipts to remove references
-        const { error: updateError } = await supabase
-          .from('payment_receipts')
-          .update({ 
-            user_id: null,
-            status: 'deleted'
-          })
-          .eq('profile_id', profileData.id)
-
-        if (updateError) {
-          console.error('Error updating payment receipts:', updateError)
-          throw updateError
-        }
-
-        console.log('Successfully updated payment receipts')
-
-        // Then delete the user
-        const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
-        if (deleteError) {
-          console.error('Error deleting user:', deleteError)
-          throw deleteError
-        }
-
-        console.log('Successfully deleted user')
-
-        return new Response(JSON.stringify({ success: true }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
 
       case 'resetPassword':
-        const { error: resetError } = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: userId, // We'll pass email instead of userId for password reset
-        })
-        if (resetError) throw resetError
-        return new Response(JSON.stringify({ success: true }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+        console.log('Starting password reset for email:', userId)
+        try {
+          const { error: resetError } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: userId,
+          })
+
+          if (resetError) {
+            console.error('Error generating reset link:', resetError)
+            throw resetError
+          }
+
+          console.log('Successfully generated password reset link')
+          
+          return new Response(
+            JSON.stringify({ success: true }), 
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        } catch (error) {
+          console.error('Error in password reset:', error)
+          throw error
+        }
 
       default:
         throw new Error('Invalid action')
     }
   } catch (error) {
     console.error('Error in admin-operations:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ error: error.message }), 
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
   }
 })
