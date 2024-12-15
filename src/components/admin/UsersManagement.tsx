@@ -1,32 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { Trash, Key, Eye } from "lucide-react";
 import { useState } from "react";
+import { UsersTable } from "./users/UsersTable";
+import { DeleteUserDialog } from "./users/DeleteUserDialog";
 
 export const UsersManagement = () => {
-  const navigate = useNavigate();
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -59,20 +38,15 @@ export const UsersManagement = () => {
         console.error("Error updating payment receipt:", updateError);
       }
 
-      // Then proceed with user deletion
-      const response = await fetch('/functions/v1/admin-operations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      // Then proceed with user deletion using the edge function
+      const { error } = await supabase.functions.invoke('admin-operations', {
+        body: {
           action: 'deleteUser',
           userId: userToDelete,
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (error) throw error;
 
       toast.success("User deleted successfully");
       refetch();
@@ -90,19 +64,14 @@ export const UsersManagement = () => {
 
     setIsResettingPassword(true);
     try {
-      const response = await fetch('/functions/v1/admin-operations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      const { error } = await supabase.functions.invoke('admin-operations', {
+        body: {
           action: 'resetPassword',
-          userId: email, // We pass the email here
-        }),
+          userId: email,
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to send password reset');
+      if (error) throw error;
 
       toast.success("Password reset email sent successfully");
     } catch (error) {
@@ -119,83 +88,19 @@ export const UsersManagement = () => {
 
   return (
     <>
-      <div className="rounded-md border overflow-x-auto">
-        <div className="min-w-[800px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[200px]">Email</TableHead>
-                <TableHead className="min-w-[150px]">Full Name</TableHead>
-                <TableHead className="min-w-[150px]">Company</TableHead>
-                <TableHead className="min-w-[120px]">Joined Date</TableHead>
-                <TableHead className="min-w-[120px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users?.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium break-all">{user.email}</TableCell>
-                  <TableCell>{user.full_name}</TableCell>
-                  <TableCell>{user.company}</TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {format(new Date(user.created_at), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2 flex-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(`/admin/users/${user.id}`)}
-                        className="h-8 w-8"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handlePasswordReset(user.email)}
-                        disabled={isResettingPassword}
-                        className="h-8 w-8"
-                      >
-                        <Key className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setUserToDelete(user.id)}
-                        className="h-8 w-8"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <UsersTable
+        users={users}
+        onDeleteUser={setUserToDelete}
+        onResetPassword={handlePasswordReset}
+        isResettingPassword={isResettingPassword}
+      />
 
-      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
-        <AlertDialogContent className="sm:max-w-[425px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this user?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. The user will be permanently deleted from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="sm:flex-row gap-2">
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-2 sm:mt-0"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteUserDialog
+        isOpen={!!userToDelete}
+        isDeleting={isDeleting}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </>
   );
 };
