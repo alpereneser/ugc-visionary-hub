@@ -21,8 +21,21 @@ serve(async (req) => {
 
     switch (action) {
       case 'deleteUser':
+        // First, set payment_receipts.user_id to null for this user's receipts
+        const { error: updateError } = await supabase
+          .from('payment_receipts')
+          .update({ user_id: null })
+          .eq('user_id', userId)
+
+        if (updateError) {
+          console.error('Error updating payment receipts:', updateError)
+          throw updateError
+        }
+
+        // Then delete the user
         const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
         if (deleteError) throw deleteError
+
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
@@ -41,6 +54,7 @@ serve(async (req) => {
         throw new Error('Invalid action')
     }
   } catch (error) {
+    console.error('Error in admin-operations:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
