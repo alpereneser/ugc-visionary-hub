@@ -26,19 +26,19 @@ export const DeleteUserDialog = ({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
-          <AlertDialogTitle>Bu kullanıcıyı silmek istediğinizden emin misiniz?</AlertDialogTitle>
+          <AlertDialogTitle>Are you sure you want to delete this user?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bu işlem geri alınamaz. Kullanıcı ve ilişkili tüm verileri kalıcı olarak silinecektir.
+            This action cannot be undone. The user and all associated data will be permanently deleted.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:flex-row gap-2">
-          <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-2 sm:mt-0"
             disabled={isDeleting}
           >
-            {isDeleting ? "Siliniyor..." : "Sil"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

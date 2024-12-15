@@ -19,7 +19,7 @@ export const UsersManagement = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        toast.error("Kullanıcılar yüklenirken hata oluştu");
+        toast.error("Failed to load users");
         throw error;
       }
       return data;
@@ -40,11 +40,11 @@ export const UsersManagement = () => {
 
       if (error) throw error;
 
-      toast.success("Kullanıcı başarıyla silindi");
+      toast.success("User deleted successfully");
       refetch();
     } catch (error) {
-      console.error("Kullanıcı silinirken hata:", error);
-      toast.error("Kullanıcı silinemedi. Lütfen tekrar deneyin.");
+      console.error("Error deleting user:", error);
+      toast.error("Failed to delete user. Please try again.");
     } finally {
       setIsDeleting(false);
       setUserToDelete(null);
@@ -65,17 +65,17 @@ export const UsersManagement = () => {
 
       if (error) throw error;
 
-      toast.success("Şifre sıfırlama e-postası gönderildi");
+      toast.success("Password reset email sent");
     } catch (error) {
-      console.error("Şifre sıfırlama hatası:", error);
-      toast.error("Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin.");
+      console.error("Password reset error:", error);
+      toast.error("Failed to send password reset email. Please try again.");
     } finally {
       setIsResettingPassword(false);
     }
   };
 
   if (isLoading) {
-    return <div className="p-4">Kullanıcılar yükleniyor...</div>;
+    return <div className="p-4">Loading users...</div>;
   }
 
   return (

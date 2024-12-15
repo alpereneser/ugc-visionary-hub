@@ -43,11 +43,11 @@ export const ProductActions = ({ productId }: ProductActionsProps) => {
 
       if (error) throw error;
 
-      toast.success("Ürün başarıyla silindi");
+      toast.success("Product deleted successfully");
       navigate("/products");
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Ürün silinirken bir hata oluştu");
+      toast.error("Error deleting product");
     }
   };
 
@@ -62,14 +62,14 @@ export const ProductActions = ({ productId }: ProductActionsProps) => {
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => navigate(`/products/edit/${productId}`)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Düzenle
+            Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash className="mr-2 h-4 w-4" />
-            Sil
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -77,18 +77,18 @@ export const ProductActions = ({ productId }: ProductActionsProps) => {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ürünü silmek istediğinizden emin misiniz?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu işlem geri alınamaz. Ürün ve ilgili tüm veriler kalıcı olarak silinecektir.
+              This action cannot be undone. The product and all related data will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Sil
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
