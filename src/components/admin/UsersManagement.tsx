@@ -49,6 +49,17 @@ export const UsersManagement = () => {
 
     setIsDeleting(true);
     try {
+      // First, update the payment receipt status to 'deleted'
+      const { error: updateError } = await supabase
+        .from("payment_receipts")
+        .update({ status: 'deleted' })
+        .eq("profile_id", userToDelete);
+
+      if (updateError) {
+        console.error("Error updating payment receipt:", updateError);
+      }
+
+      // Then proceed with user deletion
       const response = await fetch('/functions/v1/admin-operations', {
         method: 'POST',
         headers: {
@@ -174,7 +185,7 @@ export const UsersManagement = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:flex-row gap-2">
-            <AlertDialogCancel disabled={isDeleting} className="mt-2 sm:mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 mt-2 sm:mt-0"
