@@ -26,7 +26,7 @@ export const ArchivedLicenses = () => {
         .from("payment_receipts")
         .select(`
           *,
-          profile:profiles(*)
+          profiles!inner(*)
         `)
         .eq('status', 'rejected')
         .order("created_at", { ascending: false });
@@ -73,10 +73,10 @@ export const ArchivedLicenses = () => {
             {archivedReceipts?.map((receipt) => (
               <TableRow key={receipt.id}>
                 <TableCell>
-                  {receipt.profile?.email}
+                  {receipt.profiles.email}
                   <br />
                   <span className="text-sm text-muted-foreground">
-                    {receipt.profile?.full_name}
+                    {receipt.profiles.full_name}
                   </span>
                 </TableCell>
                 <TableCell>${receipt.amount}</TableCell>
