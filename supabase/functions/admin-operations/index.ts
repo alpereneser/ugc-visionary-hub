@@ -35,14 +35,26 @@ serve(async (req) => {
             throw licenseError
           }
 
-          // Then, update payment receipts
+          // Get the profile ID for this user
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .single()
+
+          if (profileError) {
+            console.error('Error getting profile:', profileError)
+            throw profileError
+          }
+
+          // Update payment receipts
           const { error: receiptError } = await supabase
             .from('payment_receipts')
             .update({ 
               user_id: null,
               status: 'deleted'
             })
-            .eq('user_id', userId)
+            .eq('profile_id', profileData.id)
 
           if (receiptError) {
             console.error('Error updating payment receipts:', receiptError)

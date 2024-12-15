@@ -28,7 +28,7 @@ export const DeleteUserDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Bu kullanıcıyı silmek istediğinizden emin misiniz?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bu işlem geri alınamaz. Kullanıcı kalıcı olarak sistemden silinecektir.
+            Bu işlem geri alınamaz. Kullanıcı ve ilişkili tüm verileri kalıcı olarak silinecektir.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:flex-row gap-2">

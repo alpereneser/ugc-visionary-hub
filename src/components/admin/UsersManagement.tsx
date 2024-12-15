@@ -44,7 +44,7 @@ export const UsersManagement = () => {
       refetch();
     } catch (error) {
       console.error("Kullanıcı silinirken hata:", error);
-      toast.error("Kullanıcı silinemedi");
+      toast.error("Kullanıcı silinemedi. Lütfen tekrar deneyin.");
     } finally {
       setIsDeleting(false);
       setUserToDelete(null);
@@ -68,7 +68,7 @@ export const UsersManagement = () => {
       toast.success("Şifre sıfırlama e-postası gönderildi");
     } catch (error) {
       console.error("Şifre sıfırlama hatası:", error);
-      toast.error("Şifre sıfırlama e-postası gönderilemedi");
+      toast.error("Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin.");
     } finally {
       setIsResettingPassword(false);
     }
