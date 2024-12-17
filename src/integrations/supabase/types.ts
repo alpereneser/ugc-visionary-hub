@@ -238,6 +238,7 @@ export type Database = {
         Row: {
           cost_price: number | null
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
           name: string
@@ -249,6 +250,7 @@ export type Database = {
         Insert: {
           cost_price?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           name: string
@@ -260,6 +262,7 @@ export type Database = {
         Update: {
           cost_price?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           name?: string

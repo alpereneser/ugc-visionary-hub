@@ -18,7 +18,8 @@ const NewProduct = () => {
     name: "",
     description: "",
     sku: "",
-    price: "",
+    cost_price: "",
+    retail_price: "",
     url: "",
   });
 
@@ -34,7 +35,8 @@ const NewProduct = () => {
             name: formData.name,
             description: formData.description,
             sku: formData.sku,
-            price: parseFloat(formData.price) || 0,
+            cost_price: parseFloat(formData.cost_price) || null,
+            retail_price: parseFloat(formData.retail_price) || null,
             url: formData.url,
             created_by: session?.user?.id,
           },
@@ -113,15 +115,28 @@ const NewProduct = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
+              <Label htmlFor="cost_price">Cost Price</Label>
               <Input
-                id="price"
-                name="price"
+                id="cost_price"
+                name="cost_price"
                 type="number"
                 step="0.01"
-                value={formData.price}
+                value={formData.cost_price}
                 onChange={handleChange}
-                placeholder="Enter product price"
+                placeholder="Enter cost price"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="retail_price">Retail Price</Label>
+              <Input
+                id="retail_price"
+                name="retail_price"
+                type="number"
+                step="0.01"
+                value={formData.retail_price}
+                onChange={handleChange}
+                placeholder="Enter retail price"
               />
             </div>
 
