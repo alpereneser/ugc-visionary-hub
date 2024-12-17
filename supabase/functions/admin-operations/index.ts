@@ -24,44 +24,40 @@ serve(async (req) => {
         console.log('Starting user deletion process for userId:', userId)
         
         try {
-          // First, update user licenses
+          // First, delete user licenses
           const { error: licenseError } = await supabase
             .from('user_licenses')
             .delete()
-            .eq('user_id', userId)
+            .eq('profile_id', userId)
 
           if (licenseError) {
             console.error('Error deleting user license:', licenseError)
             throw licenseError
           }
 
-          // Get the profile ID for this user
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', userId)
-            .single()
-
-          if (profileError) {
-            console.error('Error getting profile:', profileError)
-            throw profileError
-          }
-
-          // Update payment receipts
+          // Then, delete payment receipts
           const { error: receiptError } = await supabase
             .from('payment_receipts')
-            .update({ 
-              user_id: null,
-              status: 'deleted'
-            })
-            .eq('profile_id', profileData.id)
+            .delete()
+            .eq('profile_id', userId)
 
           if (receiptError) {
-            console.error('Error updating payment receipts:', receiptError)
+            console.error('Error deleting payment receipts:', receiptError)
             throw receiptError
           }
 
-          // Finally delete the user
+          // Delete the profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', userId)
+
+          if (profileError) {
+            console.error('Error deleting profile:', profileError)
+            throw profileError
+          }
+
+          // Finally delete the auth user
           const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
           
           if (deleteError) {
@@ -69,7 +65,7 @@ serve(async (req) => {
             throw deleteError
           }
 
-          console.log('Successfully deleted user and updated related records')
+          console.log('Successfully deleted user and related records')
           
           return new Response(
             JSON.stringify({ success: true }), 
