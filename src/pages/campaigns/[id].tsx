@@ -10,7 +10,34 @@ import { format } from "date-fns";
 
 interface AdditionalExpense {
   name: string;
-  amount: number;
+  amount: string;
+}
+
+interface Campaign {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+  additional_expenses: AdditionalExpense[];
+  campaign_creators: Array<{
+    creator_id: string;
+    ugc_creators: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      email: string | null;
+    };
+  }>;
+  campaign_products: Array<{
+    product_id: string;
+    products: {
+      id: string;
+      name: string;
+      description: string | null;
+    };
+  }>;
 }
 
 const CampaignDetail = () => {
@@ -46,7 +73,7 @@ const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      return campaign;
+      return campaign as Campaign;
     },
   });
 
@@ -70,7 +97,7 @@ const CampaignDetail = () => {
     );
   }
 
-  const additionalExpenses = campaign.additional_expenses as AdditionalExpense[] || [];
+  const additionalExpenses = campaign.additional_expenses || [];
 
   return (
     <MainLayout>
@@ -126,7 +153,7 @@ const CampaignDetail = () => {
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Assigned Creators</h3>
                   <div className="space-y-4">
-                    {campaign.campaign_creators.map((cc: any) => (
+                    {campaign.campaign_creators.map((cc) => (
                       <div key={cc.creator_id} className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">
@@ -154,7 +181,7 @@ const CampaignDetail = () => {
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Associated Products</h3>
                   <div className="space-y-4">
-                    {campaign.campaign_products.map((cp: any) => (
+                    {campaign.campaign_products.map((cp) => (
                       <div key={cp.product_id} className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">{cp.products.name}</p>
@@ -182,7 +209,7 @@ const CampaignDetail = () => {
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Additional Expenses</h3>
                   <div className="space-y-4">
-                    {additionalExpenses.map((expense: AdditionalExpense, index: number) => (
+                    {additionalExpenses.map((expense, index) => (
                       <div key={index} className="flex justify-between items-center">
                         <span className="font-medium">{expense.name}</span>
                         <span className="text-muted-foreground">${expense.amount}</span>
