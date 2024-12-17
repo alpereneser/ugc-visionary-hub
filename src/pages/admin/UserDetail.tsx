@@ -5,6 +5,26 @@ import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 
+interface UserLicense {
+  id: string;
+  user_id: string | null;
+  trial_start_date: string | null;
+  trial_end_date: string | null;
+  has_lifetime_access: boolean | null;
+  payment_status: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface UserProfile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  company: string | null;
+  created_at: string;
+  user_licenses: UserLicense[];
+}
+
 const UserDetail = () => {
   const { id } = useParams();
 
@@ -21,7 +41,7 @@ const UserDetail = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as UserProfile;
     },
   });
 
