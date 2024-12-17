@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -27,7 +26,6 @@ const creatorFormSchema = z.object({
   instagram_username: z.string().optional(),
   tiktok_username: z.string().optional(),
   youtube_username: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 type CreatorFormValues = z.infer<typeof creatorFormSchema>;
@@ -44,7 +42,6 @@ const NewCreator = () => {
       instagram_username: "",
       tiktok_username: "",
       youtube_username: "",
-      notes: "",
     },
   });
 
@@ -58,7 +55,6 @@ const NewCreator = () => {
           last_name: values.last_name,
           email: values.email,
           phone: values.phone,
-          notes: values.notes,
         }])
         .select()
         .single();
@@ -234,23 +230,6 @@ const NewCreator = () => {
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Add any additional notes about the creator..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <div className="flex justify-end">
                 <Button
