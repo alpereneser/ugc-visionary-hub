@@ -27,16 +27,15 @@ enabled = true
 
 [[functions]]
 name = "handle-wise"
-verify_jwt = false
 
 [[functions]]
 name = "handle-paytr"
-verify_jwt = false
 
 [[functions]]
 name = "paytr-transactions"
-verify_jwt = false
 
 [[functions]]
 name = "paytr-status"
-verify_jwt = false
+
+[[functions]]
+name = "admin-operations"
