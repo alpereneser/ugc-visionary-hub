@@ -2,9 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
+import { format } from "date-fns";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -78,9 +80,7 @@ const CampaignDetail = () => {
               </Button>
               <h1 className="text-3xl font-bold">{campaign.name}</h1>
             </div>
-            <Button onClick={() => navigate(`/campaigns/edit/${campaign.id}`)}>
-              Edit Campaign
-            </Button>
+            <CampaignActions campaignId={campaign.id} />
           </div>
 
           <div className="grid gap-6">
@@ -101,13 +101,13 @@ const CampaignDetail = () => {
                   <div>
                     <span className="font-medium">Start Date:</span>
                     <p className="text-muted-foreground">
-                      {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'Not set'}
+                      {campaign.start_date ? format(new Date(campaign.start_date), 'PPP') : 'Not set'}
                     </p>
                   </div>
                   <div>
                     <span className="font-medium">End Date:</span>
                     <p className="text-muted-foreground">
-                      {campaign.end_date ? new Date(campaign.end_date).toLocaleDateString() : 'Not set'}
+                      {campaign.end_date ? format(new Date(campaign.end_date), 'PPP') : 'Not set'}
                     </p>
                   </div>
                 </div>
@@ -133,7 +133,7 @@ const CampaignDetail = () => {
                           variant="ghost"
                           onClick={() => navigate(`/creators/${cc.creator_id}`)}
                         >
-                          View Creator <ExternalLink className="w-4 h-4 ml-2" />
+                          View Creator
                         </Button>
                       </div>
                     ))}
@@ -161,8 +161,24 @@ const CampaignDetail = () => {
                           variant="ghost"
                           onClick={() => navigate(`/products/${cp.product_id}`)}
                         >
-                          View Product <ExternalLink className="w-4 h-4 ml-2" />
+                          View Product
                         </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {campaign.additional_expenses && campaign.additional_expenses.length > 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="font-semibold mb-4">Additional Expenses</h3>
+                  <div className="space-y-4">
+                    {campaign.additional_expenses.map((expense: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="font-medium">{expense.name}</span>
+                        <span className="text-muted-foreground">${expense.amount}</span>
                       </div>
                     ))}
                   </div>
