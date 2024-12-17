@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
+import { Json } from "@/integrations/supabase/types";
 
 interface AdditionalExpense {
   name: string;
@@ -21,6 +22,7 @@ interface Campaign {
   end_date: string | null;
   status: string;
   additional_expenses: AdditionalExpense[];
+  media: Json;
   campaign_creators: Array<{
     creator_id: string;
     ugc_creators: {
@@ -40,6 +42,10 @@ interface Campaign {
   }>;
 }
 
+interface SupabaseCampaign extends Omit<Campaign, 'additional_expenses'> {
+  additional_expenses: Json;
+}
+
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -47,7 +53,7 @@ const CampaignDetail = () => {
   const { data: campaign, isLoading } = useQuery({
     queryKey: ["campaign", id],
     queryFn: async () => {
-      const { data: campaign, error } = await supabase
+      const { data: campaignData, error } = await supabase
         .from("campaigns")
         .select(`
           *,
@@ -73,7 +79,14 @@ const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      return campaign as Campaign;
+      
+      // Transform the data to match our Campaign interface
+      const transformedCampaign: Campaign = {
+        ...campaignData,
+        additional_expenses: (campaignData.additional_expenses as AdditionalExpense[]) || []
+      };
+
+      return transformedCampaign;
     },
   });
 
