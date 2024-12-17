@@ -8,6 +8,11 @@ import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
 
+interface AdditionalExpense {
+  name: string;
+  amount: number;
+}
+
 const CampaignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -64,6 +69,8 @@ const CampaignDetail = () => {
       </MainLayout>
     );
   }
+
+  const additionalExpenses = campaign.additional_expenses as AdditionalExpense[] || [];
 
   return (
     <MainLayout>
@@ -170,12 +177,12 @@ const CampaignDetail = () => {
               </Card>
             )}
 
-            {campaign.additional_expenses && campaign.additional_expenses.length > 0 && (
+            {additionalExpenses.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Additional Expenses</h3>
                   <div className="space-y-4">
-                    {campaign.additional_expenses.map((expense: any, index: number) => (
+                    {additionalExpenses.map((expense: AdditionalExpense, index: number) => (
                       <div key={index} className="flex justify-between items-center">
                         <span className="font-medium">{expense.name}</span>
                         <span className="text-muted-foreground">${expense.amount}</span>

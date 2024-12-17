@@ -14,6 +14,7 @@ interface UserLicense {
   payment_status: string | null;
   created_at: string | null;
   updated_at: string | null;
+  profile_id: string;
 }
 
 interface UserProfile {
@@ -35,7 +36,7 @@ const UserDetail = () => {
         .from("profiles")
         .select(`
           *,
-          user_licenses (*)
+          user_licenses!user_licenses_profile_id_fkey (*)
         `)
         .eq("id", id)
         .single();

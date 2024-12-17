@@ -374,6 +374,7 @@ export type Database = {
           has_lifetime_access: boolean | null
           id: string
           payment_status: string | null
+          profile_id: string
           trial_end_date: string | null
           trial_start_date: string | null
           updated_at: string | null
@@ -384,6 +385,7 @@ export type Database = {
           has_lifetime_access?: boolean | null
           id?: string
           payment_status?: string | null
+          profile_id: string
           trial_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string | null
@@ -394,12 +396,21 @@ export type Database = {
           has_lifetime_access?: boolean | null
           id?: string
           payment_status?: string | null
+          profile_id?: string
           trial_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_licenses_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
