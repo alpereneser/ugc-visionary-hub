@@ -8,40 +8,7 @@ import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
 import { Json } from "@/integrations/supabase/types";
-
-interface AdditionalExpense {
-  name: string;
-  amount: string;
-  currency: string;
-}
-
-interface Campaign {
-  id: string;
-  name: string;
-  description: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  status: string;
-  additional_expenses: AdditionalExpense[];
-  media: Json;
-  campaign_creators: Array<{
-    creator_id: string;
-    ugc_creators: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      email: string | null;
-    };
-  }>;
-  campaign_products: Array<{
-    product_id: string;
-    products: {
-      id: string;
-      name: string;
-      description: string | null;
-    };
-  }>;
-}
+import { AdditionalExpense, Campaign, transformCampaignData } from "@/types/campaign-types";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -77,13 +44,7 @@ const CampaignDetail = () => {
 
       if (error) throw error;
       
-      // Transform the data to match our Campaign interface
-      const transformedCampaign: Campaign = {
-        ...campaignData,
-        additional_expenses: (campaignData.additional_expenses as AdditionalExpense[]) || []
-      };
-
-      return transformedCampaign;
+      return transformCampaignData(campaignData);
     },
   });
 
@@ -106,8 +67,6 @@ const CampaignDetail = () => {
       </MainLayout>
     );
   }
-
-  const additionalExpenses = campaign.additional_expenses || [];
 
   const formatCurrency = (amount: string, currency: string) => {
     const symbols: Record<string, string> = {
@@ -223,12 +182,12 @@ const CampaignDetail = () => {
               </Card>
             )}
 
-            {additionalExpenses.length > 0 && (
+            {campaign.additional_expenses.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-4">Additional Expenses</h3>
                   <div className="space-y-4">
-                    {additionalExpenses.map((expense, index) => (
+                    {campaign.additional_expenses.map((expense, index) => (
                       <div key={index} className="flex justify-between items-center">
                         <span className="font-medium">{expense.name}</span>
                         <span className="text-muted-foreground">

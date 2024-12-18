@@ -84,7 +84,11 @@ export interface Product {
 export function transformCampaignData(rawCampaign: RawCampaign): Campaign {
   return {
     ...rawCampaign,
-    additional_expenses: (rawCampaign.additional_expenses as AdditionalExpense[]) || []
+    additional_expenses: (rawCampaign.additional_expenses as any[] || []).map((expense: any) => ({
+      name: expense.name || '',
+      amount: expense.amount || '',
+      currency: expense.currency || 'USD'
+    }))
   };
 }
 
