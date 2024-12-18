@@ -40,7 +40,7 @@ export const CampaignForm = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [uploadedMedia, setUploadedMedia] = useState<File[]>([]);
-  const [expenses, setExpenses] = useState<Array<{ name: string; amount: string }>>([]);
+  const [expenses, setExpenses] = useState<Array<{ name: string; amount: string; currency: string }>>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

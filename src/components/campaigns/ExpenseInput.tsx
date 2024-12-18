@@ -1,15 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, X } from "lucide-react";
+import { CurrencySelect } from "./CurrencySelect";
 
 type Expense = {
   name: string;
   amount: string;
+  currency: string;
 };
 
-export const ExpenseInput = ({ expenses, setExpenses }) => {
+interface ExpenseInputProps {
+  expenses: Expense[];
+  setExpenses: (expenses: Expense[]) => void;
+}
+
+export const ExpenseInput = ({ expenses, setExpenses }: ExpenseInputProps) => {
   const addExpense = () => {
-    setExpenses([...expenses, { name: "", amount: "" }]);
+    setExpenses([...expenses, { name: "", amount: "", currency: "USD" }]);
   };
 
   const removeExpense = (index: number) => {
@@ -44,14 +51,20 @@ export const ExpenseInput = ({ expenses, setExpenses }) => {
             onChange={(e) => updateExpense(index, "name", e.target.value)}
             className="flex-1"
           />
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="Amount"
-            value={expense.amount}
-            onChange={(e) => updateExpense(index, "amount", e.target.value)}
-            className="w-32"
-          />
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="Amount"
+              value={expense.amount}
+              onChange={(e) => updateExpense(index, "amount", e.target.value)}
+              className="w-32"
+            />
+            <CurrencySelect
+              value={expense.currency}
+              onChange={(value) => updateExpense(index, "currency", value)}
+            />
+          </div>
           <Button
             type="button"
             variant="ghost"
