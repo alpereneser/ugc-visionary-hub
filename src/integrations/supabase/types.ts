@@ -96,6 +96,7 @@ export type Database = {
       campaigns: {
         Row: {
           additional_expenses: Json | null
+          additional_expenses_currency: string | null
           created_at: string
           description: string | null
           end_date: string | null
@@ -108,6 +109,7 @@ export type Database = {
         }
         Insert: {
           additional_expenses?: Json | null
+          additional_expenses_currency?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -120,6 +122,7 @@ export type Database = {
         }
         Update: {
           additional_expenses?: Json | null
+          additional_expenses_currency?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -237,36 +240,42 @@ export type Database = {
       products: {
         Row: {
           cost_price: number | null
+          cost_price_currency: string | null
           created_at: string
           created_by: string | null
           description: string | null
           id: string
           name: string
           retail_price: number | null
+          retail_price_currency: string | null
           sku: string | null
           updated_at: string
           url: string | null
         }
         Insert: {
           cost_price?: number | null
+          cost_price_currency?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           name: string
           retail_price?: number | null
+          retail_price_currency?: string | null
           sku?: string | null
           updated_at?: string
           url?: string | null
         }
         Update: {
           cost_price?: number | null
+          cost_price_currency?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           name?: string
           retail_price?: number | null
+          retail_price_currency?: string | null
           sku?: string | null
           updated_at?: string
           url?: string | null
