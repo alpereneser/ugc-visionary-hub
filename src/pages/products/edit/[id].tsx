@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { CurrencySelect } from "@/components/products/CurrencySelect";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -17,7 +19,9 @@ const EditProduct = () => {
     description: "",
     sku: "",
     cost_price: "",
+    cost_price_currency: "USD",
     retail_price: "",
+    retail_price_currency: "USD",
     url: "",
   });
 
@@ -37,7 +41,9 @@ const EditProduct = () => {
         description: data.description || "",
         sku: data.sku || "",
         cost_price: data.cost_price?.toString() || "",
+        cost_price_currency: data.cost_price_currency || "USD",
         retail_price: data.retail_price?.toString() || "",
+        retail_price_currency: data.retail_price_currency || "USD",
         url: data.url || "",
       });
 
@@ -55,8 +61,10 @@ const EditProduct = () => {
           name: formData.name,
           description: formData.description,
           sku: formData.sku,
-          cost_price: parseFloat(formData.cost_price) || 0,
-          retail_price: parseFloat(formData.retail_price) || 0,
+          cost_price: parseFloat(formData.cost_price) || null,
+          cost_price_currency: formData.cost_price_currency,
+          retail_price: parseFloat(formData.retail_price) || null,
+          retail_price_currency: formData.retail_price_currency,
           url: formData.url,
           updated_at: new Date().toISOString(),
         })
@@ -75,6 +83,10 @@ const EditProduct = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCurrencyChange = (field: string) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   if (isLoading) {
@@ -104,9 +116,7 @@ const EditProduct = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Product Name
-              </label>
+              <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
                 name="name"
@@ -117,9 +127,7 @@ const EditProduct = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium">
-                Description
-              </label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -130,9 +138,7 @@ const EditProduct = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="sku" className="text-sm font-medium">
-                SKU
-              </label>
+              <Label htmlFor="sku">SKU</Label>
               <Input
                 id="sku"
                 name="sku"
@@ -142,37 +148,45 @@ const EditProduct = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="cost_price" className="text-sm font-medium">
-                Cost Price
-              </label>
-              <Input
-                id="cost_price"
-                name="cost_price"
-                type="number"
-                step="0.01"
-                value={formData.cost_price}
-                onChange={handleChange}
-              />
+              <Label htmlFor="cost_price">Cost Price</Label>
+              <div className="flex gap-4">
+                <Input
+                  id="cost_price"
+                  name="cost_price"
+                  type="number"
+                  step="0.01"
+                  value={formData.cost_price}
+                  onChange={handleChange}
+                  className="flex-1"
+                />
+                <CurrencySelect
+                  value={formData.cost_price_currency}
+                  onChange={handleCurrencyChange("cost_price_currency")}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="retail_price" className="text-sm font-medium">
-                Retail Price
-              </label>
-              <Input
-                id="retail_price"
-                name="retail_price"
-                type="number"
-                step="0.01"
-                value={formData.retail_price}
-                onChange={handleChange}
-              />
+              <Label htmlFor="retail_price">Retail Price</Label>
+              <div className="flex gap-4">
+                <Input
+                  id="retail_price"
+                  name="retail_price"
+                  type="number"
+                  step="0.01"
+                  value={formData.retail_price}
+                  onChange={handleChange}
+                  className="flex-1"
+                />
+                <CurrencySelect
+                  value={formData.retail_price_currency}
+                  onChange={handleCurrencyChange("retail_price_currency")}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="url" className="text-sm font-medium">
-                Product URL
-              </label>
+              <Label htmlFor="url">Product URL</Label>
               <Input
                 id="url"
                 name="url"
