@@ -16,7 +16,8 @@ export type CampaignFormValues = z.infer<typeof campaignFormSchema>;
 
 export interface AdditionalExpense {
   name: string;
-  amount: number;
+  amount: string;
+  currency: string;
 }
 
 export interface Campaign {
@@ -75,11 +76,8 @@ export interface Product {
   retail_price: number | null;
   cost_price: number | null;
   created_by: string | null;
-}
-
-// Type for raw campaign data from Supabase
-export interface RawCampaign extends Omit<Campaign, 'additional_expenses'> {
-  additional_expenses: Json;
+  cost_price_currency: string;
+  retail_price_currency: string;
 }
 
 // Helper function to transform raw campaign data
@@ -88,4 +86,9 @@ export function transformCampaignData(rawCampaign: RawCampaign): Campaign {
     ...rawCampaign,
     additional_expenses: (rawCampaign.additional_expenses as AdditionalExpense[]) || []
   };
+}
+
+// Type for raw campaign data from Supabase
+export interface RawCampaign extends Omit<Campaign, 'additional_expenses'> {
+  additional_expenses: Json;
 }

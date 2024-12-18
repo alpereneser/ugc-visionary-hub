@@ -12,6 +12,7 @@ import { Json } from "@/integrations/supabase/types";
 interface AdditionalExpense {
   name: string;
   amount: string;
+  currency: string;
 }
 
 interface Campaign {
@@ -40,10 +41,6 @@ interface Campaign {
       description: string | null;
     };
   }>;
-}
-
-interface SupabaseCampaign extends Omit<Campaign, 'additional_expenses'> {
-  additional_expenses: Json;
 }
 
 const CampaignDetail = () => {
@@ -111,6 +108,15 @@ const CampaignDetail = () => {
   }
 
   const additionalExpenses = campaign.additional_expenses || [];
+
+  const formatCurrency = (amount: string, currency: string) => {
+    const symbols: Record<string, string> = {
+      USD: "$",
+      EUR: "€",
+      TRY: "₺"
+    };
+    return `${symbols[currency] || ""}${amount}`;
+  };
 
   return (
     <MainLayout>
@@ -225,7 +231,9 @@ const CampaignDetail = () => {
                     {additionalExpenses.map((expense, index) => (
                       <div key={index} className="flex justify-between items-center">
                         <span className="font-medium">{expense.name}</span>
-                        <span className="text-muted-foreground">${expense.amount}</span>
+                        <span className="text-muted-foreground">
+                          {formatCurrency(expense.amount, expense.currency)}
+                        </span>
                       </div>
                     ))}
                   </div>
