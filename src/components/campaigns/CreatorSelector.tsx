@@ -19,9 +19,13 @@ export const CreatorSelector = ({ form, selectedCreators, setSelectedCreators })
   const { data: creators } = useQuery({
     queryKey: ["creators"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from("ugc_creators")
-        .select("id, first_name, last_name");
+        .select("id, first_name, last_name")
+        .eq('created_by', user?.id);
+        
       if (error) throw error;
       return data;
     },

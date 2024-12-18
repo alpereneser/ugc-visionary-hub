@@ -19,9 +19,13 @@ export const ProductSelector = ({ form, selectedProducts, setSelectedProducts })
   const { data: products } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, cost_price");
+        .select("id, name, cost_price")
+        .eq('created_by', user?.id);
+        
       if (error) throw error;
       return data;
     },
