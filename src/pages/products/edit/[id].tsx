@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CurrencySelect } from "@/components/products/CurrencySelect";
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -35,24 +36,29 @@ const EditProduct = () => {
         .single();
 
       if (error) throw error;
-
-      setFormData({
-        name: data.name || "",
-        description: data.description || "",
-        sku: data.sku || "",
-        cost_price: data.cost_price?.toString() || "",
-        cost_price_currency: data.cost_price_currency || "USD",
-        retail_price: data.retail_price?.toString() || "",
-        retail_price_currency: data.retail_price_currency || "USD",
-        url: data.url || "",
-      });
-
       return data;
     },
   });
 
+  // Update form data when product data is loaded
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        sku: product.sku || "",
+        cost_price: product.cost_price?.toString() || "",
+        cost_price_currency: product.cost_price_currency || "USD",
+        retail_price: product.retail_price?.toString() || "",
+        retail_price_currency: product.retail_price_currency || "USD",
+        url: product.url || "",
+      });
+    }
+  }, [product]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const { error } = await supabase
@@ -77,6 +83,8 @@ const EditProduct = () => {
     } catch (error) {
       console.error("Error updating product:", error);
       toast.error("Failed to update product");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,7 +124,7 @@ const EditProduct = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Product Name</Label>
+              <Label htmlFor="name">Product Name *</Label>
               <Input
                 id="name"
                 name="name"
@@ -204,8 +212,8 @@ const EditProduct = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                Save Changes
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>
