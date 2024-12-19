@@ -4,12 +4,17 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { ReceiptViewer } from "./license/ReceiptViewer";
 import { LicenseTable } from "./license/LicenseTable";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { PaymentReceipt } from "./license/types";
 
 export const LicenseManagement = () => {
   const queryClient = useQueryClient();
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const { data: receipts, isLoading } = useQuery({
     queryKey: ["admin-receipts"],
@@ -92,20 +97,82 @@ export const LicenseManagement = () => {
     }
   };
 
+  const handleAssignLicense = async () => {
+    if (!email || isAssigning) return;
+
+    setIsAssigning(true);
+    try {
+      // First, get the user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (profileError) {
+        toast.error("User not found");
+        return;
+      }
+
+      // Update or create the license
+      const { error: licenseError } = await supabase
+        .from("user_licenses")
+        .upsert({
+          profile_id: profile.id,
+          has_lifetime_access: true,
+          payment_status: "completed",
+        });
+
+      if (licenseError) throw licenseError;
+
+      toast.success("Lifetime license assigned successfully");
+      setEmail("");
+    } catch (error) {
+      console.error("Error assigning license:", error);
+      toast.error("Failed to assign license");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading licenses...</div>;
   }
 
   return (
     <>
-      <div className="rounded-md border">
-        <LicenseTable
-          receipts={receipts || []}
-          onViewReceipt={handleViewReceipt}
-          onUpdateStatus={(userId, status, receiptId) =>
-            updateLicenseMutation.mutate({ userId, status, receiptId })
-          }
-        />
+      <div className="space-y-6">
+        <div className="p-4 border rounded-lg space-y-4">
+          <h3 className="text-lg font-medium">Assign Lifetime License</h3>
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <Label htmlFor="email">User Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter user email"
+              />
+            </div>
+            <Button
+              onClick={handleAssignLicense}
+              disabled={!email || isAssigning}
+            >
+              {isAssigning ? "Assigning..." : "Assign License"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <LicenseTable
+            receipts={receipts || []}
+            onViewReceipt={handleViewReceipt}
+            onUpdateStatus={(userId, status, receiptId) =>
+              updateLicenseMutation.mutate({ userId, status, receiptId })
+            }
+          />
+        </div>
       </div>
 
       <ReceiptViewer
