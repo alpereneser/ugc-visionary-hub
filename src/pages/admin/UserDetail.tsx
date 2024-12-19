@@ -1,9 +1,13 @@
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface UserLicense {
   id: string;
@@ -28,6 +32,7 @@ interface UserProfile {
 
 const UserDetail = () => {
   const { id } = useParams();
+  const queryClient = useQueryClient();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["user-detail", id],
@@ -43,6 +48,30 @@ const UserDetail = () => {
 
       if (error) throw error;
       return data as UserProfile;
+    },
+  });
+
+  const updateLicenseMutation = useMutation({
+    mutationFn: async ({ hasLifetimeAccess }: { hasLifetimeAccess: boolean }) => {
+      if (!user?.user_licenses?.[0]?.id) return;
+
+      const { error } = await supabase
+        .from("user_licenses")
+        .update({
+          has_lifetime_access: hasLifetimeAccess,
+          payment_status: hasLifetimeAccess ? "completed" : "pending",
+        })
+        .eq("id", user.user_licenses[0].id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-detail", id] });
+      toast.success("License updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating license:", error);
+      toast.error("Failed to update license");
     },
   });
 
@@ -63,6 +92,7 @@ const UserDetail = () => {
   }
 
   const license = user.user_licenses?.[0];
+  const hasLifetimeAccess = license?.has_lifetime_access || false;
 
   return (
     <MainLayout>
@@ -95,24 +125,34 @@ const UserDetail = () => {
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">License Information</h2>
-              <div className="space-y-2">
-                <p>
-                  <span className="font-medium">License Status:</span>{" "}
-                  {license?.has_lifetime_access ? "Lifetime Access" : "Trial"}
-                </p>
-                <p>
-                  <span className="font-medium">Payment Status:</span>{" "}
-                  {license?.payment_status}
-                </p>
-                {!license?.has_lifetime_access && (
+              <h2 className="text-xl font-semibold mb-4">License Management</h2>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <Switch
+                    id="lifetime-access"
+                    checked={hasLifetimeAccess}
+                    onCheckedChange={(checked) =>
+                      updateLicenseMutation.mutate({ hasLifetimeAccess: checked })
+                    }
+                  />
+                  <Label htmlFor="lifetime-access">Lifetime Access</Label>
+                </div>
+                <div className="space-y-2">
                   <p>
-                    <span className="font-medium">Trial Ends:</span>{" "}
-                    {license?.trial_end_date
-                      ? format(new Date(license.trial_end_date), "PPP")
-                      : "Not available"}
+                    <span className="font-medium">Current License:</span>{" "}
+                    {hasLifetimeAccess ? "Lifetime Access" : "Trial"}
                   </p>
-                )}
+                  <p>
+                    <span className="font-medium">Payment Status:</span>{" "}
+                    {license?.payment_status}
+                  </p>
+                  {!hasLifetimeAccess && license?.trial_end_date && (
+                    <p>
+                      <span className="font-medium">Trial Ends:</span>{" "}
+                      {format(new Date(license.trial_end_date), "PPP")}
+                    </p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
