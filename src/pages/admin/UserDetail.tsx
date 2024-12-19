@@ -53,17 +53,30 @@ const UserDetail = () => {
 
   const updateLicenseMutation = useMutation({
     mutationFn: async ({ hasLifetimeAccess }: { hasLifetimeAccess: boolean }) => {
-      if (!user?.user_licenses?.[0]?.id) return;
+      if (!user?.user_licenses?.[0]?.id) {
+        // If no license exists, create one
+        const { error: createError } = await supabase
+          .from("user_licenses")
+          .insert({
+            profile_id: id,
+            has_lifetime_access: hasLifetimeAccess,
+            payment_status: hasLifetimeAccess ? "completed" : "pending",
+          });
 
-      const { error } = await supabase
-        .from("user_licenses")
-        .update({
-          has_lifetime_access: hasLifetimeAccess,
-          payment_status: hasLifetimeAccess ? "completed" : "pending",
-        })
-        .eq("id", user.user_licenses[0].id);
+        if (createError) throw createError;
+      } else {
+        // Update existing license
+        const { error: updateError } = await supabase
+          .from("user_licenses")
+          .update({
+            has_lifetime_access: hasLifetimeAccess,
+            payment_status: hasLifetimeAccess ? "completed" : "pending",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.user_licenses[0].id);
 
-      if (error) throw error;
+        if (updateError) throw updateError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-detail", id] });
