@@ -7,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
-import { Json } from "@/integrations/supabase/types";
-import { AdditionalExpense, Campaign, transformCampaignData } from "@/types/campaign-types";
+import { Campaign, RawCampaignResponse, transformCampaignData } from "@/types/campaign-types";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -44,7 +43,7 @@ const CampaignDetail = () => {
 
       if (error) throw error;
       
-      return transformCampaignData(campaignData);
+      return transformCampaignData(campaignData as RawCampaignResponse);
     },
   });
 

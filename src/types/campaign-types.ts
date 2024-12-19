@@ -20,6 +20,49 @@ export interface AdditionalExpense {
   currency: string;
 }
 
+export interface Creator {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  sku: string | null;
+  url: string | null;
+  retail_price: number | null;
+  cost_price: number | null;
+}
+
+export interface CampaignCreatorResponse {
+  creator_id: string;
+  ugc_creators: Creator;
+}
+
+export interface CampaignProductResponse {
+  product_id: string;
+  products: Product;
+}
+
+export interface RawCampaignResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+  media: Json | null;
+  additional_expenses: Json;
+  additional_expenses_currency: string | null;
+  campaign_creators: CampaignCreatorResponse[];
+  campaign_products: CampaignProductResponse[];
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -31,68 +74,20 @@ export interface Campaign {
   updated_at: string;
   media: Json | null;
   additional_expenses: AdditionalExpense[];
-  campaign_creators: CampaignCreator[];
-  campaign_products: CampaignProduct[];
+  additional_expenses_currency: string | null;
+  campaign_creators: CampaignCreatorResponse[];
+  campaign_products: CampaignProductResponse[];
 }
 
-export interface CampaignCreator {
-  id: string;
-  campaign_id: string;
-  creator_id: string;
-  status: string | null;
-  created_at: string;
-  updated_at: string;
-  creator: Creator;
-}
-
-export interface Creator {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CampaignProduct {
-  id: string;
-  campaign_id: string;
-  product_id: string;
-  quantity: number;
-  created_at: string;
-  updated_at: string;
-  product: Product;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  sku: string | null;
-  created_at: string;
-  updated_at: string;
-  url: string | null;
-  retail_price: number | null;
-  cost_price: number | null;
-  created_by: string | null;
-  cost_price_currency: string;
-  retail_price_currency: string;
-}
-
-// Helper function to transform raw campaign data
-export function transformCampaignData(rawCampaign: RawCampaign): Campaign {
+export function transformCampaignData(rawCampaign: RawCampaignResponse): Campaign {
   return {
     ...rawCampaign,
-    additional_expenses: (rawCampaign.additional_expenses as any[] || []).map((expense: any) => ({
-      name: expense.name || '',
-      amount: expense.amount || '',
-      currency: expense.currency || 'USD'
-    }))
+    additional_expenses: Array.isArray(rawCampaign.additional_expenses)
+      ? rawCampaign.additional_expenses.map((expense: any) => ({
+          name: expense.name || '',
+          amount: expense.amount || '',
+          currency: expense.currency || 'USD'
+        }))
+      : []
   };
-}
-
-// Type for raw campaign data from Supabase
-export interface RawCampaign extends Omit<Campaign, 'additional_expenses'> {
-  additional_expenses: Json;
 }
