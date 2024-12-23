@@ -30,7 +30,7 @@ export const useCreatorForm = () => {
     }
 
     try {
-      // First, create the creator
+      // First, create the creator with the user's ID
       const { data: creator, error: creatorError } = await supabase
         .from("ugc_creators")
         .insert({
@@ -38,7 +38,7 @@ export const useCreatorForm = () => {
           last_name: values.last_name,
           email: values.email,
           phone: values.phone,
-          created_by: session.user.id,
+          created_by: session.user.id, // Set the created_by field
         })
         .select()
         .single();

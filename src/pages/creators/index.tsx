@@ -5,24 +5,30 @@ import { Plus, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const Creators = () => {
   const navigate = useNavigate();
+  const session = useSession();
 
   const { data: creators, isLoading } = useQuery({
-    queryKey: ["creators"],
+    queryKey: ["creators", session?.user?.id],
     queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
       const { data, error } = await supabase
         .from("ugc_creators")
         .select(`
           *,
           social_media_profiles (*)
         `)
+        .eq('created_by', session.user.id) // Only fetch creators created by the current user
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
     },
+    enabled: !!session?.user?.id,
   });
 
   return (
