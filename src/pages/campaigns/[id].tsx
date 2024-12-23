@@ -34,7 +34,13 @@ const CampaignDetail = () => {
             products (
               id,
               name,
-              description
+              description,
+              sku,
+              url,
+              retail_price,
+              cost_price,
+              cost_price_currency,
+              retail_price_currency
             )
           )
         `)
@@ -66,15 +72,6 @@ const CampaignDetail = () => {
       </MainLayout>
     );
   }
-
-  const formatCurrency = (amount: string, currency: string) => {
-    const symbols: Record<string, string> = {
-      USD: "$",
-      EUR: "€",
-      TRY: "₺"
-    };
-    return `${symbols[currency] || ""}${amount}`;
-  };
 
   return (
     <MainLayout>
@@ -174,24 +171,6 @@ const CampaignDetail = () => {
                         >
                           View Product
                         </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {campaign.additional_expenses.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-4">Additional Expenses</h3>
-                  <div className="space-y-4">
-                    {campaign.additional_expenses.map((expense, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span className="font-medium">{expense.name}</span>
-                        <span className="text-muted-foreground">
-                          {formatCurrency(expense.amount, expense.currency)}
-                        </span>
                       </div>
                     ))}
                   </div>

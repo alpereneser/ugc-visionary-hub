@@ -35,8 +35,8 @@ export interface Product {
   url: string | null;
   retail_price: number | null;
   cost_price: number | null;
-  cost_price_currency?: string;
-  retail_price_currency?: string;
+  cost_price_currency: string | null;
+  retail_price_currency: string | null;
 }
 
 export interface CampaignCreatorResponse {
