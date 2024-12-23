@@ -21,7 +21,7 @@ export const CampaignsList = () => {
   const session = useSession();
 
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ["campaigns", statusFilter],
+    queryKey: ["campaigns", statusFilter, session?.user?.id],
     queryFn: async () => {
       console.log("Fetching campaigns with status filter:", statusFilter);
       console.log("Current user ID:", session?.user?.id);
@@ -44,6 +44,7 @@ export const CampaignsList = () => {
             )
           )
         `)
+        .eq('created_by', session?.user?.id)
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
