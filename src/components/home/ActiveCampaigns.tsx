@@ -2,13 +2,30 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/integrations/supabase/types";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
-interface ActiveCampaignsProps {
-  campaigns?: Tables<"campaigns">[];
-}
-
-export const ActiveCampaigns = ({ campaigns }: ActiveCampaignsProps) => {
+export const ActiveCampaigns = () => {
   const navigate = useNavigate();
+  const session = useSession();
+
+  const { data: campaigns, isLoading } = useQuery({
+    queryKey: ["active-campaigns", session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .eq('created_by', session?.user?.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   return (
     <Card>
@@ -16,7 +33,9 @@ export const ActiveCampaigns = ({ campaigns }: ActiveCampaignsProps) => {
         <CardTitle>Active Campaigns</CardTitle>
       </CardHeader>
       <CardContent>
-        {campaigns && campaigns.length > 0 ? (
+        {isLoading ? (
+          <p className="text-muted-foreground">Loading campaigns...</p>
+        ) : campaigns && campaigns.length > 0 ? (
           <div className="space-y-4">
             {campaigns.map((campaign) => (
               <div
