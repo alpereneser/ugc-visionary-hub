@@ -69,10 +69,6 @@ export const CostBreakdown = ({
     );
   };
 
-  const calculateTotalCost = () => {
-    return (calculateProductsCost() + calculateTotalExpenses()).toFixed(2);
-  };
-
   return (
     <Card>
       <CardContent className="pt-6">
@@ -110,7 +106,19 @@ export const CostBreakdown = ({
           <Separator className="my-2" />
           <div className="flex justify-between font-semibold">
             <span>Total Estimated Cost:</span>
-            <span>${calculateTotalCost()}</span>
+            <div className="space-y-1">
+              {Object.entries(
+                (campaign ? campaign.additional_expenses : expenses).reduce((acc: Record<string, number>, expense) => {
+                  const currency = expense.currency || 'USD';
+                  acc[currency] = (acc[currency] || 0) + Number(expense.amount || 0);
+                  return acc;
+                }, {})
+              ).map(([currency, amount]) => (
+                <div key={currency} className="text-right">
+                  {formatCurrency(amount, currency)}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>

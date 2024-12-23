@@ -23,7 +23,7 @@ export const ProductSelector = ({ form, selectedProducts, setSelectedProducts })
       
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, cost_price")
+        .select("id, name, cost_price, cost_price_currency")
         .eq('created_by', user?.id);
         
       if (error) throw error;
@@ -53,7 +53,10 @@ export const ProductSelector = ({ form, selectedProducts, setSelectedProducts })
               </SelectTrigger>
               <SelectContent>
                 {products?.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
+                  <SelectItem 
+                    key={product.id} 
+                    value={product.id}
+                  >
                     {product.name}
                   </SelectItem>
                 ))}
@@ -66,7 +69,7 @@ export const ProductSelector = ({ form, selectedProducts, setSelectedProducts })
               return (
                 <div
                   key={productId}
-                  className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm"
+                  className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-2"
                 >
                   {product?.name}
                 </div>
