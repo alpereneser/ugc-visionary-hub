@@ -35,6 +35,8 @@ export interface Product {
   url: string | null;
   retail_price: number | null;
   cost_price: number | null;
+  cost_price_currency?: string;
+  retail_price_currency?: string;
 }
 
 export interface CampaignCreatorResponse {
@@ -63,20 +65,8 @@ export interface RawCampaignResponse {
   campaign_products: CampaignProductResponse[];
 }
 
-export interface Campaign {
-  id: string;
-  name: string;
-  description: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  status: string | null;
-  created_at: string;
-  updated_at: string;
-  media: Json | null;
+export interface Campaign extends Omit<RawCampaignResponse, 'additional_expenses'> {
   additional_expenses: AdditionalExpense[];
-  additional_expenses_currency: string | null;
-  campaign_creators: CampaignCreatorResponse[];
-  campaign_products: CampaignProductResponse[];
 }
 
 export function transformCampaignData(rawCampaign: RawCampaignResponse): Campaign {

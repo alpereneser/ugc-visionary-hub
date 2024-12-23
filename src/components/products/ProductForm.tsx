@@ -1,183 +1,187 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencySelect } from "./CurrencySelect";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().optional(),
-  sku: z.string().optional(),
-  cost_price: z.string().optional(),
-  cost_price_currency: z.string().default("USD"),
-  retail_price: z.string().optional(),
-  retail_price_currency: z.string().default("USD"),
-  url: z.string().url().optional().or(z.literal("")),
-});
+interface ProductFormData {
+  name: string;
+  description?: string;
+  sku?: string;
+  cost_price?: string;
+  cost_price_currency: string;
+  retail_price?: string;
+  retail_price_currency: string;
+  url?: string;
+}
 
 export const ProductForm = () => {
-  const navigate = useNavigate();
   const session = useSession();
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      sku: "",
-      cost_price: "",
-      cost_price_currency: "USD",
-      retail_price: "",
-      retail_price_currency: "USD",
-      url: "",
-    },
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: "",
+    description: "",
+    sku: "",
+    cost_price: "",
+    cost_price_currency: "USD",
+    retail_price: "",
+    retail_price_currency: "USD",
+    url: "",
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
+  const createProductMutation = useMutation({
+    mutationFn: async (data: ProductFormData) => {
       const { error } = await supabase
         .from("products")
         .insert([
           {
-            ...values,
-            cost_price: values.cost_price ? parseFloat(values.cost_price) : null,
-            retail_price: values.retail_price ? parseFloat(values.retail_price) : null,
+            name: data.name,
+            description: data.description,
+            sku: data.sku,
+            cost_price: data.cost_price ? parseFloat(data.cost_price) : null,
+            cost_price_currency: data.cost_price_currency,
+            retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
+            retail_price_currency: data.retail_price_currency,
+            url: data.url,
             created_by: session?.user?.id,
           },
         ]);
 
       if (error) throw error;
-
-      toast.success("Product added successfully");
-      navigate("/products");
-    } catch (error) {
+    },
+    onSuccess: () => {
+      toast.success("Product created successfully");
+      setFormData({
+        name: "",
+        description: "",
+        sku: "",
+        cost_price: "",
+        cost_price_currency: "USD",
+        retail_price: "",
+        retail_price_currency: "USD",
+        url: "",
+      });
+    },
+    onError: (error) => {
       console.error("Error creating product:", error);
       toast.error("Failed to create product");
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      await createProductMutation.mutateAsync(formData);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCurrencyChange = (field: string) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="name">Product Name *</Label>
+        <Input
+          id="name"
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          value={formData.name}
+          onChange={handleChange}
+          required
         />
+      </div>
 
-        <FormField
-          control={form.control}
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
           name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          value={formData.description}
+          onChange={handleChange}
+          rows={4}
         />
+      </div>
 
-        <FormField
-          control={form.control}
+      <div className="space-y-2">
+        <Label htmlFor="sku">SKU</Label>
+        <Input
+          id="sku"
           name="sku"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>SKU</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          value={formData.sku}
+          onChange={handleChange}
         />
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
+      <div className="space-y-2">
+        <Label htmlFor="cost_price">Cost Price</Label>
+        <div className="flex gap-4">
+          <Input
+            id="cost_price"
             name="cost_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cost Price</FormLabel>
-                <div className="flex gap-2">
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <CurrencySelect
-                    value={form.watch("cost_price_currency")}
-                    onChange={(value) => form.setValue("cost_price_currency", value)}
-                  />
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            type="number"
+            step="0.01"
+            value={formData.cost_price}
+            onChange={handleChange}
+            className="flex-1"
           />
+          <CurrencySelect
+            value={formData.cost_price_currency}
+            onChange={handleCurrencyChange("cost_price_currency")}
+          />
+        </div>
+      </div>
 
-          <FormField
-            control={form.control}
+      <div className="space-y-2">
+        <Label htmlFor="retail_price">Retail Price</Label>
+        <div className="flex gap-4">
+          <Input
+            id="retail_price"
             name="retail_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Retail Price</FormLabel>
-                <div className="flex gap-2">
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <CurrencySelect
-                    value={form.watch("retail_price_currency")}
-                    onChange={(value) => form.setValue("retail_price_currency", value)}
-                  />
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            type="number"
+            step="0.01"
+            value={formData.retail_price}
+            onChange={handleChange}
+            className="flex-1"
+          />
+          <CurrencySelect
+            value={formData.retail_price_currency}
+            onChange={handleCurrencyChange("retail_price_currency")}
           />
         </div>
+      </div>
 
-        <FormField
-          control={form.control}
+      <div className="space-y-2">
+        <Label htmlFor="url">Product URL</Label>
+        <Input
+          id="url"
           name="url"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product URL</FormLabel>
-              <FormControl>
-                <Input type="url" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          type="url"
+          value={formData.url}
+          onChange={handleChange}
         />
+      </div>
 
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-            Cancel
-          </Button>
-          <Button type="submit">Create Product</Button>
-        </div>
-      </form>
-    </Form>
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating..." : "Create Product"}
+      </Button>
+    </form>
   );
 };
