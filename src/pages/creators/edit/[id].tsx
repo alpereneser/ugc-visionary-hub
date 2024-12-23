@@ -19,14 +19,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 const EditCreator = () => {
@@ -41,7 +39,6 @@ const EditCreator = () => {
       last_name: "",
       email: "",
       phone: "",
-      notes: "",
     },
   });
 
@@ -63,7 +60,6 @@ const EditCreator = () => {
           last_name: data.last_name,
           email: data.email || "",
           phone: data.phone || "",
-          notes: data.notes || "",
         });
       }
 
