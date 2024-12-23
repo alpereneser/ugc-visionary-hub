@@ -1,6 +1,6 @@
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -32,6 +32,7 @@ const formSchema = z.object({
 const EditCreator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -55,37 +56,53 @@ const EditCreator = () => {
 
       if (error) throw error;
       
-      // Set form values
-      form.reset({
-        first_name: data.first_name,
-        last_name: data.last_name,
-        email: data.email || "",
-        phone: data.phone || "",
-      });
+      // Set form values when creator data is loaded
+      if (data) {
+        form.reset({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email || "",
+          phone: data.phone || "",
+          notes: data.notes || "",
+        });
+      }
 
       return data;
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
+  const updateCreator = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
       const { error } = await supabase
         .from("ugc_creators")
         .update(values)
         .eq("id", id);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["creator", id] });
       toast.success("Creator updated successfully");
       navigate(`/creators/${id}`);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating creator:", error);
       toast.error("Failed to update creator");
-    }
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    updateCreator.mutate(values);
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div>Loading...</div>
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
@@ -161,20 +178,6 @@ const EditCreator = () => {
                         <FormLabel>Phone</FormLabel>
                         <FormControl>
                           <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
