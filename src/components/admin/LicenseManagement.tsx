@@ -66,7 +66,7 @@ export const LicenseManagement = () => {
             has_lifetime_access: true,
             payment_status: "completed",
           })
-          .eq("user_id", userId);
+          .eq("profile_id", userId);
 
         if (licenseError) throw licenseError;
       }
@@ -97,11 +97,8 @@ export const LicenseManagement = () => {
     }
   };
 
-  const handleAssignLicense = async () => {
-    if (!email || isAssigning) return;
-
-    setIsAssigning(true);
-    try {
+  const assignLicenseMutation = useMutation({
+    mutationFn: async (email: string) => {
       // First, get the user's profile
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -109,30 +106,65 @@ export const LicenseManagement = () => {
         .eq("email", email)
         .single();
 
-      if (profileError) {
-        toast.error("User not found");
-        return;
+      if (profileError) throw new Error("User not found");
+
+      // Check if license exists
+      const { data: existingLicense, error: licenseCheckError } = await supabase
+        .from("user_licenses")
+        .select("id")
+        .eq("profile_id", profile.id)
+        .single();
+
+      if (licenseCheckError && licenseCheckError.code !== "PGRST116") {
+        throw licenseCheckError;
       }
 
-      // Update or create the license
-      const { error: licenseError } = await supabase
-        .from("user_licenses")
-        .upsert({
-          profile_id: profile.id,
-          has_lifetime_access: true,
-          payment_status: "completed",
-        });
+      if (existingLicense) {
+        // Update existing license
+        const { error: updateError } = await supabase
+          .from("user_licenses")
+          .update({
+            has_lifetime_access: true,
+            payment_status: "completed",
+          })
+          .eq("profile_id", profile.id);
 
-      if (licenseError) throw licenseError;
+        if (updateError) throw updateError;
+      } else {
+        // Create new license
+        const { error: createError } = await supabase
+          .from("user_licenses")
+          .insert({
+            profile_id: profile.id,
+            has_lifetime_access: true,
+            payment_status: "completed",
+          });
 
+        if (createError) throw createError;
+      }
+
+      return profile;
+    },
+    onSuccess: () => {
       toast.success("Lifetime license assigned successfully");
       setEmail("");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error assigning license:", error);
-      toast.error("Failed to assign license");
-    } finally {
-      setIsAssigning(false);
-    }
+      if (error.message === "User not found") {
+        toast.error("User not found");
+      } else {
+        toast.error("Failed to assign license");
+      }
+    },
+  });
+
+  const handleAssignLicense = () => {
+    if (!email || isAssigning) return;
+    setIsAssigning(true);
+    assignLicenseMutation.mutate(email, {
+      onSettled: () => setIsAssigning(false),
+    });
   };
 
   if (isLoading) {
