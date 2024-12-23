@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatorSelector } from "./CreatorSelector";
 import { ProductSelector } from "./ProductSelector";
+import { ExpenseInput } from "./ExpenseInput";
+import { CostBreakdown } from "./CostBreakdown";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -34,6 +36,7 @@ export const CampaignForm = () => {
   const session = useSession();
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [expenses, setExpenses] = useState<Array<{ name: string; amount: string; currency: string }>>([]);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -59,6 +62,7 @@ export const CampaignForm = () => {
             start_date: values.start_date || null,
             end_date: values.end_date || null,
             created_by: session?.user?.id,
+            additional_expenses: expenses,
           },
         ])
         .select()
@@ -173,6 +177,14 @@ export const CampaignForm = () => {
           form={form}
           selectedProducts={selectedProducts}
           setSelectedProducts={setSelectedProducts}
+        />
+
+        <ExpenseInput expenses={expenses} setExpenses={setExpenses} />
+
+        <CostBreakdown
+          selectedProducts={selectedProducts}
+          selectedCreators={selectedCreators}
+          expenses={expenses}
         />
 
         <div className="flex justify-end gap-4">
