@@ -8,6 +8,7 @@ import { CampaignActions } from "@/components/campaigns/CampaignActions";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { format } from "date-fns";
 import { Campaign, RawCampaignResponse, transformCampaignData } from "@/types/campaign-types";
+import { CostBreakdown } from "@/components/campaigns/CostBreakdown";
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -73,6 +74,9 @@ const CampaignDetail = () => {
     );
   }
 
+  const selectedProducts = campaign.campaign_products.map(cp => cp.product_id);
+  const selectedCreators = campaign.campaign_creators.map(cc => cc.creator_id);
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
@@ -121,6 +125,13 @@ const CampaignDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <CostBreakdown
+              campaign={campaign}
+              selectedProducts={selectedProducts}
+              selectedCreators={selectedCreators}
+              expenses={campaign.additional_expenses}
+            />
 
             {campaign.campaign_creators && campaign.campaign_creators.length > 0 && (
               <Card>
