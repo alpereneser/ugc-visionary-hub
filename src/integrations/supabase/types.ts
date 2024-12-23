@@ -98,6 +98,7 @@ export type Database = {
           additional_expenses: Json | null
           additional_expenses_currency: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           end_date: string | null
           id: string
@@ -111,6 +112,7 @@ export type Database = {
           additional_expenses?: Json | null
           additional_expenses_currency?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
@@ -124,6 +126,7 @@ export type Database = {
           additional_expenses?: Json | null
           additional_expenses_currency?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
@@ -350,6 +353,7 @@ export type Database = {
       ugc_creators: {
         Row: {
           created_at: string
+          created_by: string | null
           email: string | null
           first_name: string
           id: string
@@ -359,6 +363,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           email?: string | null
           first_name: string
           id?: string
@@ -368,6 +373,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           email?: string | null
           first_name?: string
           id?: string

@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 import {
   Form,
   FormControl,
@@ -15,112 +13,92 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { CreatorSelector } from "./CreatorSelector";
 import { ProductSelector } from "./ProductSelector";
-import { MediaUploader } from "./MediaUploader";
-import { CostBreakdown } from "./CostBreakdown";
-import { ExpenseInput } from "./ExpenseInput";
+import { useState } from "react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Campaign name must be at least 2 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  selectedCreators: z.array(z.string()).min(1, "Select at least one creator"),
-  selectedProducts: z.array(z.string()).min(1, "Select at least one product"),
-  media: z.array(z.any()).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  selectedCreators: z.array(z.string()),
+  selectedProducts: z.array(z.string()),
 });
-
-type FormValues = z.infer<typeof formSchema>;
 
 export const CampaignForm = () => {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const session = useSession();
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
-  const [uploadedMedia, setUploadedMedia] = useState<File[]>([]);
-  const [expenses, setExpenses] = useState<Array<{ name: string; amount: string; currency: string }>>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       description: "",
-      startDate: "",
-      endDate: "",
+      start_date: "",
+      end_date: "",
       selectedCreators: [],
       selectedProducts: [],
-      media: [],
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Upload media files first
-      const mediaUrls = [];
-      for (const file of uploadedMedia) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('campaign_media')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('campaign_media')
-          .getPublicUrl(fileName);
-          
-        mediaUrls.push({
-          url: publicUrl,
-          type: file.type.startsWith('image/') ? 'image' : 'video'
-        });
-      }
-
-      // Insert campaign with additional expenses
+      // Insert campaign
       const { data: campaign, error: campaignError } = await supabase
         .from("campaigns")
-        .insert({
-          name: values.name,
-          description: values.description,
-          start_date: values.startDate || null,
-          end_date: values.endDate || null,
-          status: "draft",
-          media: mediaUrls,
-          additional_expenses: expenses,
-        })
+        .insert([
+          {
+            name: values.name,
+            description: values.description,
+            start_date: values.start_date || null,
+            end_date: values.end_date || null,
+            created_by: session?.user?.id,
+          },
+        ])
         .select()
         .single();
 
       if (campaignError) throw campaignError;
 
       // Insert campaign creators
-      const creatorPromises = selectedCreators.map((creatorId) =>
-        supabase.from("campaign_creators").insert({
-          campaign_id: campaign.id,
-          creator_id: creatorId,
-        })
-      );
+      if (selectedCreators.length > 0) {
+        const { error: creatorsError } = await supabase
+          .from("campaign_creators")
+          .insert(
+            selectedCreators.map((creatorId) => ({
+              campaign_id: campaign.id,
+              creator_id: creatorId,
+            }))
+          );
+
+        if (creatorsError) throw creatorsError;
+      }
 
       // Insert campaign products
-      const productPromises = selectedProducts.map((productId) =>
-        supabase.from("campaign_products").insert({
-          campaign_id: campaign.id,
-          product_id: productId,
-        })
-      );
+      if (selectedProducts.length > 0) {
+        const { error: productsError } = await supabase
+          .from("campaign_products")
+          .insert(
+            selectedProducts.map((productId) => ({
+              campaign_id: campaign.id,
+              product_id: productId,
+            }))
+          );
 
-      await Promise.all([...creatorPromises, ...productPromises]);
+        if (productsError) throw productsError;
+      }
 
       toast.success("Campaign created successfully");
-      navigate(`/campaigns/${campaign.id}`);
+      navigate("/campaigns");
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -134,7 +112,7 @@ export const CampaignForm = () => {
             <FormItem>
               <FormLabel>Campaign Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter campaign name" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -146,26 +124,22 @@ export const CampaignForm = () => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Enter campaign description"
-                  className="resize-none"
-                  {...field}
-                />
+                <Textarea {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="startDate"
+            name="start_date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Start Date (Optional)</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -176,10 +150,10 @@ export const CampaignForm = () => {
 
           <FormField
             control={form.control}
-            name="endDate"
+            name="end_date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>End Date (Optional)</FormLabel>
+                <FormLabel>End Date</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -201,30 +175,11 @@ export const CampaignForm = () => {
           setSelectedProducts={setSelectedProducts}
         />
 
-        <MediaUploader
-          uploadedMedia={uploadedMedia}
-          setUploadedMedia={setUploadedMedia}
-        />
-
-        <ExpenseInput expenses={expenses} setExpenses={setExpenses} />
-
-        <CostBreakdown
-          selectedProducts={selectedProducts}
-          selectedCreators={selectedCreators}
-          expenses={expenses}
-        />
-
         <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(-1)}
-          >
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Campaign"}
-          </Button>
+          <Button type="submit">Create Campaign</Button>
         </div>
       </form>
     </Form>
