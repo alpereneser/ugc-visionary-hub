@@ -1,30 +1,11 @@
-import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { campaignFormSchema, type CampaignFormValues, type CampaignStatus } from "@/types/campaign-types";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { CampaignFormFields, type CampaignFormData } from "@/components/campaigns/shared/CampaignFormFields";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const EditCampaign = () => {
   const { id } = useParams();
@@ -34,38 +15,34 @@ const EditCampaign = () => {
   const { data: campaign, isLoading } = useQuery({
     queryKey: ["campaign", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: campaignData, error: campaignError } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+          *,
+          campaign_creators (
+            creator_id
+          ),
+          campaign_products (
+            product_id
+          )
+        `)
         .eq("id", id)
         .single();
 
-      if (error) throw error;
-      return data;
-    },
-  });
+      if (campaignError) throw campaignError;
 
-  const form = useForm<CampaignFormValues>({
-    resolver: zodResolver(campaignFormSchema),
-    defaultValues: {
-      name: campaign?.name || "",
-      description: campaign?.description || "",
-      status: (campaign?.status as CampaignStatus) || "draft",
-      startDate: campaign?.start_date || "",
-      endDate: campaign?.end_date || "",
-    },
-    values: {
-      name: campaign?.name || "",
-      description: campaign?.description || "",
-      status: (campaign?.status as CampaignStatus) || "draft",
-      startDate: campaign?.start_date || "",
-      endDate: campaign?.end_date || "",
+      return {
+        ...campaignData,
+        selectedCreators: campaignData.campaign_creators?.map((cc: any) => cc.creator_id) || [],
+        selectedProducts: campaignData.campaign_products?.map((cp: any) => cp.product_id) || [],
+      };
     },
   });
 
   const updateCampaign = useMutation({
-    mutationFn: async (values: CampaignFormValues) => {
-      const { error } = await supabase
+    mutationFn: async (values: CampaignFormData) => {
+      // Update campaign
+      const { error: campaignError } = await supabase
         .from("campaigns")
         .update({
           name: values.name,
@@ -77,7 +54,49 @@ const EditCampaign = () => {
         })
         .eq("id", id);
 
-      if (error) throw error;
+      if (campaignError) throw campaignError;
+
+      // Update campaign creators
+      const { error: deleteCreatorsError } = await supabase
+        .from("campaign_creators")
+        .delete()
+        .eq("campaign_id", id);
+
+      if (deleteCreatorsError) throw deleteCreatorsError;
+
+      if (values.selectedCreators.length > 0) {
+        const { error: creatorsError } = await supabase
+          .from("campaign_creators")
+          .insert(
+            values.selectedCreators.map((creatorId) => ({
+              campaign_id: id,
+              creator_id: creatorId,
+            }))
+          );
+
+        if (creatorsError) throw creatorsError;
+      }
+
+      // Update campaign products
+      const { error: deleteProductsError } = await supabase
+        .from("campaign_products")
+        .delete()
+        .eq("campaign_id", id);
+
+      if (deleteProductsError) throw deleteProductsError;
+
+      if (values.selectedProducts.length > 0) {
+        const { error: productsError } = await supabase
+          .from("campaign_products")
+          .insert(
+            values.selectedProducts.map((productId) => ({
+              campaign_id: id,
+              product_id: productId,
+            }))
+          );
+
+        if (productsError) throw productsError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaign", id] });
@@ -91,135 +110,56 @@ const EditCampaign = () => {
     },
   });
 
-  const onSubmit = (values: CampaignFormValues) => {
-    updateCampaign.mutate(values);
-  };
-
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-2xl font-bold">Loading...</h1>
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div>Loading...</div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-2xl font-bold">Edit Campaign</h1>
+  if (!campaign) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div>Campaign not found</div>
         </div>
+      </MainLayout>
+    );
+  }
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Campaign Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter campaign name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+  const defaultValues: CampaignFormData = {
+    name: campaign.name,
+    description: campaign.description || "",
+    status: campaign.status as CampaignFormData["status"],
+    startDate: campaign.start_date || "",
+    endDate: campaign.end_date || "",
+    selectedCreators: campaign.selectedCreators,
+    selectedProducts: campaign.selectedProducts,
+  };
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter campaign description"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+  return (
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <h1 className="text-2xl font-bold">Edit Campaign</h1>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="upcoming">Upcoming</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(-1)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Save Changes</Button>
-            </div>
-          </form>
-        </Form>
+          <CampaignFormFields
+            defaultValues={defaultValues}
+            onSubmit={(values) => updateCampaign.mutate(values)}
+            onCancel={() => navigate(-1)}
+            initialExpenses={campaign.additional_expenses || []}
+          />
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
